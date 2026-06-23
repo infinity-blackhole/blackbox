@@ -37,6 +37,17 @@ Clean-room Rust reimplementation of the NieR Re[in]carnation private server.
 - GPG-sign all commits
 - 1 commit == 1 PR via ghstack
 
+## Nix / Dev Environment
+
+- Enter the dev shell with `direnv allow` (or `nix develop`)
+- The flake provides devenv shells with pre-configured tooling
+- Cachix substituters are pre-configured for faster builds
+- `flake.nix` — Project flake (imports devlib modules)
+- `.envrc` — direnv entry point
+- `devenv.nix` or `devenv/` — devenv configuration (if present)
+- Run `nix flake check` before submitting
+- Run `nix fmt` before shipping
+
 ## Protect `main`
 
 - Require 1 approving review
