@@ -238,7 +238,7 @@ delegating to a separate auth server.
 `blackbox-store`, `blackbox-diff-sync`, `blackbox-master-data`, `blackbox-auth`
 
 **Provides:**
-- 28 gRPC service implementations as kameo actors, each holding a `watch::Receiver`
+- 38 gRPC service implementations as kameo actors, each holding a `watch::Receiver`
   for hot reloads and a `SqliteStore` reference.
 - **Event bus** — central kameo event dispatcher. Command handlers emit `GameEvent`,
   event handlers process asynchronously and return `Vec<DiffEntry>`.
@@ -279,7 +279,7 @@ gRPC Request
 GameServer (supervisor)
 ├── UserService (gRPC + kameo actor)
 ├── QuestService (gRPC + kameo actor)
-├── ... (28 gRPC service actors)
+├── ... (38 gRPC service actors)
 ├── QuestEventHandler (event handler)
 ├── RewardEventHandler (event handler)
 ├── GachaEventHandler (event handler)
@@ -318,7 +318,7 @@ GameServer (supervisor)
 **Provides:**
 - `POST /api/admin/master-data/reload` — constant-time Bearer token check,
   calls `master_data::reload()`.
-- Only binds when `LUNAR_ADMIN_TOKEN` env var is set (fail-closed).
+- Only binds when `BLACKBOX_ADMIN_TOKEN` env var is set (fail-closed).
 - Defaults to `127.0.0.1:8082`.
 
 **Relationships:** Depends on `blackbox-core`, `blackbox-master-data`. Standalone.
