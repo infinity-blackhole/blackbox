@@ -42,9 +42,8 @@ Clean-room Rust reimplementation of the NieR Re[in]carnation private server.
 - Enter the dev shell with `direnv allow` (or `nix develop`)
 - The flake provides devenv shells with pre-configured tooling
 - Cachix substituters are pre-configured for faster builds
-- `flake.nix` — Project flake (imports devlib modules)
+- `flake.nix` — Project flake (imports devlib modules + devenv config)
 - `.envrc` — direnv entry point
-- `devenv.nix` or `devenv/` — devenv configuration (if present)
 - Run `nix flake check` before submitting
 - Run `nix fmt` before shipping
 
