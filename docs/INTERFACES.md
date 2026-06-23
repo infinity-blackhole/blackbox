@@ -187,9 +187,13 @@ pub struct EnumDef {
 pub fn parse_schemas(path: &Path) -> Result<SchemaIR> {
     // reads schemas.json, validates, produces SchemaIR
 }
+
+pub fn generate_schemas(ir: &SchemaIR) -> TokenStream {
+    // generates Rust source code (structs + Deserialize + enums)
+}
 ```
 
-All entity structs and enums are generated at compile time from `schemas.json` at the project root. The `build.rs` of `blackbox-schemas` calls `blackbox-schemas-parser` to parse the JSON into `SchemaIR`, then `blackbox-schemas-codegen` generates Rust code via `quote!`. See `docs/COMPONENTS.md` → "Schema Definition" for the full format specification.
+All entity structs and enums are generated at compile time from `schemas.json` at the project root. The `build.rs` of `blackbox-master-data` calls `parse_schemas()` to parse the JSON into `SchemaIR`, then `generate_schemas()` generates Rust code via `quote!`. See `docs/COMPONENTS.md` → "Schema Definition" for the full format specification.
 
 ```rust
 // Generated (do not edit):
