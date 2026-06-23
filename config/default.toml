@@ -1,0 +1,18 @@
+[game_server]
+listen = "0.0.0.0:443"
+public_addr = "127.0.0.1:443"
+
+[assets_server]
+listen = "0.0.0.0:8080"
+public_addr = "127.0.0.1:8080"
+assets_dir = "."
+
+[admin]
+listen = "127.0.0.1:8082"
+
+[sqlite]
+game_db = "db/game.db"
+auth_db = "db/auth.db"
+
+[master_data]
+path = "assets/release/20240404193219.bin.e"

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package octo;
+
+message Url {
+  string url = 1;
+}
+
+message UrlList {
+  repeated Url url_list = 1;
+}
+
+message Data {
+  string id = 1;
+  string filepath = 2;
+  string name = 3;
+  int32 size = 4;
+  uint32 crc = 5;
+  int32 priority = 6;
+  int32 tag_id = 7;
+  repeated string dependencies = 8;
+  string state = 9;
+  string md5 = 10;
+  string object_name = 11;
+  uint32 generation = 12;
+  uint32 upload_version_id = 13;
+}
+
+message Database {
+  repeated Data asset_bundle_list = 1;
+  repeated Data resource_list = 2;
+}

@@ -1,0 +1,98 @@
+[workspace]
+members = [
+    "crates/blackbox-core",
+    "crates/blackbox-master-data",
+    "crates/blackbox-diff-sync",
+    "crates/blackbox-store",
+    "crates/blackbox-auth",
+    "crates/blackbox-game-server",
+    "crates/blackbox-assets-server",
+    "crates/blackbox-admin",
+    "crates/blackbox-observability",
+    "crates/blackbox-cli",
+    "crates/blackbox-dev",
+    "octo-proto",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-only"
+authors = ["Shikanime Studio <contact@shikanime.studio>"]
+repository = "https://github.com/infinity-blackhole/blackbox"
+
+[workspace.dependencies]
+# Async
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+
+# gRPC
+tonic = "0.12"
+tonic-build = "0.12"
+prost = "0.13"
+prost-types = "0.13"
+
+# HTTP
+axum = "0.7"
+tower = "0.5"
+tower-http = "0.6"
+http = "1"
+hyper = "1"
+
+# Database
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "migrate", "time"] }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rmp-serde = "1"
+bytes = "1"
+
+# Crypto
+aes = "0.8"
+cbc = "0.1"
+ring = "0.17"
+
+# Compression
+lz4 = "1"
+
+# Observability
+opentelemetry = "0.24"
+opentelemetry_sdk = { version = "0.24", features = ["rt-tokio"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-opentelemetry = "0.25"
+
+# Error
+thiserror = "1"
+anyhow = "1"
+
+# Config
+config = "0.14"
+
+# CLI
+clap = { version = "4", features = ["derive", "env"] }
+
+# Actor model
+kameo = "0.14"
+
+# Time
+time = { version = "0.3", features = ["serde"] }
+
+# Build
+prost-build = "0.13"
+
+# Testing
+insta = { version = "1", features = ["json"] }
+proptest = "1"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = 2

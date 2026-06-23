@@ -1,0 +1,22 @@
+[package]
+name = "blackbox-game-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+
+[dependencies]
+tonic = { workspace = true }
+prost = { workspace = true }
+tokio = { workspace = true }
+kameo = { workspace = true }
+tracing = { workspace = true }
+blackbox-core = { path = "../blackbox-core" }
+blackbox-store = { path = "../blackbox-store" }
+blackbox-diff-sync = { path = "../blackbox-diff-sync" }
+blackbox-master-data = { path = "../blackbox-master-data" }
+blackbox-auth = { path = "../blackbox-auth" }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }

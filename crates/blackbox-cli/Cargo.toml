@@ -1,0 +1,16 @@
+[package]
+name = "blackbox-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+
+[dependencies]
+clap = { workspace = true }
+tracing = { workspace = true }
+blackbox-core = { path = "../blackbox-core" }
+blackbox-master-data = { path = "../blackbox-master-data" }
+blackbox-observability = { path = "../blackbox-observability" }
+
+[dev-dependencies]

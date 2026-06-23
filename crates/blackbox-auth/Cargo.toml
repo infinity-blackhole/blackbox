@@ -1,0 +1,18 @@
+[package]
+name = "blackbox-auth"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+sqlx = { workspace = true }
+tokio = { workspace = true }
+hmac = "0.12"
+sha2 = "0.10"
+thiserror = { workspace = true }
+tracing = { workspace = true }
+blackbox-core = { path = "../blackbox-core" }
+
+[dev-dependencies]
+tempfile = "3"

@@ -1,0 +1,16 @@
+[package]
+name = "blackbox-dev"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+
+[dependencies]
+tokio = { workspace = true }
+tracing = { workspace = true }
+blackbox-game-server = { path = "../blackbox-game-server" }
+blackbox-assets-server = { path = "../blackbox-assets-server" }
+blackbox-admin = { path = "../blackbox-admin" }
+
+[dev-dependencies]

@@ -1,0 +1,18 @@
+[package]
+name = "blackbox-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[dependencies]
+tokio = { workspace = true, features = ["sync", "time"] }
+bytes = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+config = { workspace = true }
+time = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["full"] }
