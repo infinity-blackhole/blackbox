@@ -49,23 +49,17 @@
 | Round-trip serialize/deserialize | Unit: struct → msgpack → struct, assert equality |
 | Unknown field rejection | Unit: assert `deny_unknown_fields` rejects extra columns |
 
-### `diff-engine`
+### `diff-sync`
 
 | Test | Method |
 |------|--------|
-| `changed_tables` detects each field | Unit: mutate one field at a time, assert correct table name returned |
-| `changed_tables` returns empty for identical | Unit: compare same state, assert empty vec |
-| `compute_delta` produces correct JSON | Unit: before/after with known diff, assert JSON matches expected |
-| Delete key computation | Unit: remove a key from map, assert `delete_keys_json` contains it |
-| Update record computation | Unit: change a field, assert `update_records_json` has new value |
-| No-op for unchanged rows | Unit: identical before/after, assert empty update/delete JSON |
-| All 80+ table projectors produce valid JSON | Unit: project each table from a populated `UserState`, assert valid JSON |
-| Composite key extraction | Unit: verify key fields for each table match `key_fields_for_table` |
-
-**Property-based tests** (proptest):
-- For any two `UserState` values, `changed_tables` returns a subset of all table names
-- For any `UserState`, `compute_delta` with empty changed tables produces empty map
-- Applying delta to before produces after (round-trip property)
+| `DiffSet::push` accumulates entries | Unit: push entries, assert len |
+| `DiffSet::into_protobuf` produces valid DiffData | Unit: build DiffSet, assert protobuf has correct table keys |
+| `DiffEntry` serialization round-trip | Unit: serialize to JSON, deserialize, assert equality |
+| `key_fields_for_table` returns correct keys | Unit: verify key fields for IUserWeapon, IUserQuest, IUserMaterial |
+| Event handler returns diff entries | Unit: mock handler returns entries, assert DiffSet collects them |
+| Multiple handlers accumulate in order | Unit: push from 3 handlers, assert all present in output |
+| Empty DiffSet produces empty protobuf | Unit: default DiffSet, assert empty HashMap |
 
 ### `store`
 
@@ -87,11 +81,16 @@
 | Each service method returns valid response | Integration: call each gRPC method via tonic test client |
 | Session resolution from metadata | Integration: set `x-apb-session-key` header, assert correct user |
 | Diff interceptor attaches delta | Integration: call mutating method, assert `DiffUserData` non-empty |
+| Event handler processes and returns diff entries | Integration: emit event, assert handler returns `Vec<DiffEntry>` |
+| Event bus dispatches to multiple handlers | Integration: emit event, assert all relevant handlers invoked |
 | Platform extraction | Integration: set platform header, assert context has correct platform |
 | TimeSync trailer | Integration: call any method, assert `x-apb-response-datetime` trailer |
 | Auth flow end-to-end | Integration: Register → Auth → GameStart → GetUserProfile |
 | Facebook auth via auth lib | Integration: SetFacebookAccount with valid mock token, assert linked |
 | No-register mode | Integration: start with `--no-register`, assert RegisterUser fails |
+| Quest completion emits reward events | Integration: EndQuest, assert RewardEventHandler grants items |
+| Gacha draw updates banner state | Integration: DrawGacha, assert IUserGachaBannerState in diff |
+| Stamina consumed on quest start | Integration: StartQuest, assert stamina decreased in diff |
 
 **Test infrastructure:**
 - `tonic::transport::Server::builder().add_service(...)` with in-memory channels

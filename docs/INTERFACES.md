@@ -158,13 +158,38 @@ pub struct SessionState {
 }
 ```
 
-### `DiffData`
+### `DiffEntry` and `DiffSet`
 
 ```rust
-pub struct DiffData {
-    pub update_records_json: String,
-    pub delete_keys_json: String,
+/// A single table mutation descriptor produced by an event handler.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DiffEntry {
+    pub table: TableId,
+    pub action: DiffAction,
+    pub key_fields: HashMap<String, serde_json::Value>,
+    pub values: HashMap<String, serde_json::Value>,
 }
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+pub enum DiffAction {
+    Insert,
+    Update,
+    Delete,
+}
+
+/// Accumulator for DiffEntry across event handlers within one request cycle.
+#[derive(Debug, Default)]
+pub struct DiffSet {
+    entries: Vec<DiffEntry>,
+}
+
+impl DiffSet {
+    pub fn push(&mut self, entry: DiffEntry);
+    pub fn into_protobuf(self) -> HashMap<String, DiffData>;
+}
+
+/// Key fields for each table (80+ definitions).
+pub fn key_fields_for_table(table: &TableId) -> Option<&[&str]>;
 ```
 
 ### `AppConfig`

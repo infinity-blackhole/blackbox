@@ -21,7 +21,7 @@ blackbox/
 │   ├── core/                     # Shared types, errors, config, clock
 │   ├── schemas/                  # Generated entity structs from schemas.json
 │   ├── master-data/              # bin.e decrypt → decompress → deserialize
-│   ├── diff-engine/              # Incremental state sync computation
+│   ├── diff-sync/               # Event-driven incremental state sync
 │   ├── store/                    # sqlx SQLite user data persistence
 │   ├── auth/                     # Auth library (token validation, Facebook resolve)
 │   ├── game-server/              # tonic gRPC game server + kameo actors
@@ -90,22 +90,36 @@ No internal dependencies.
 
 ---
 
-### `diff-engine` — Incremental State Sync
+### `diff-sync` — Event-Driven Incremental State Sync
 
 **Dependencies:** `serde`, `serde_json`, `prost`, `core`, `store`
 
 **Provides:**
-- `changed_tables(before: &UserState, after: &UserState) -> Vec<TableId>` — field-by-field
-  comparison returning changed table identifiers.
-- `compute_delta(before, after, tables) -> HashMap<String, DiffData>` — project each
-  changed table to JSON, compute update/delete records using composite key fields.
-- `Projector` registry — `HashMap<TableId, fn(&UserState) -> serde_json::Value>`.
-- `DiffSet` / `DeleteTracker` — builder pattern for `DiffData` messages.
-- `key_fields_for_table(table) -> Option<&[&str]>` — composite key definitions for 80+ tables.
+- `DiffEntry` — a single table mutation descriptor: table name, action (insert/update/delete), key fields, changed values.
+- `DiffSet` — accumulator for `DiffEntry` across event handlers within one request cycle.
+- `into_protobuf(self) -> HashMap<String, DiffData>` — serializes the accumulated diff to the wire-format `DiffData` protobuf.
+- `key_fields_for_table(table: &TableId) -> Option<&[&str]>` — composite key definitions for 80+ tables.
 
-**Design:** Pure computation — no async, no IO. Fully testable.
+**Design — Approach C (Per-Event Inline Delta):**
 
-**Relationships:** Depends on `core`, `store`. Used by `game-server` interceptor.
+The diff-sync crate does NOT compute diffs by comparing before/after snapshots. Instead, each kameo event handler returns `Vec<DiffEntry>` alongside its state mutation. The command handler accumulates these into a `DiffSet` and attaches it to the gRPC response.
+
+Flow:
+```
+1. gRPC command handler receives request
+2. Validates request (stamina, prerequisites, etc.)
+3. Emits GameEvent to kameo event bus
+4. Event handlers process the event:
+   - Update DB (store)
+   - Return Vec<DiffEntry> describing what changed
+5. Handler accumulates all DiffEntry into DiffSet
+6. DiffSet::into_protobuf() → HashMap<String, DiffData>
+7. Attach to gRPC response + x-apb-update-user-data-names trailer
+```
+
+This means each event handler is diff-aware — it knows exactly which tables it mutated and reports those changes. No full-state comparison needed at request time.
+
+**Relationships:** Depends on `core`, `store`. Used by `game-server` (event handlers and command layer).
 
 ---
 
@@ -153,30 +167,61 @@ delegating to a separate auth server.
 ### `game-server` — Game Server
 
 **Dependencies:** `tonic`, `prost`, `tokio`, `kameo`, `tracing`, `core`, `store`,
-`diff-engine`, `master-data`, `auth`
+`diff-sync`, `master-data`, `auth`
 
 **Provides:**
 - 28 gRPC service implementations as kameo actors, each holding a `watch::Receiver`
   for hot reloads and a `SqliteStore` reference.
+- **Event bus** — central kameo event dispatcher. Command handlers emit `GameEvent`,
+  event handlers process asynchronously and return `Vec<DiffEntry>`.
+- **Event handlers** — specialized actors for each domain:
+  - `QuestEventHandler` — updates quest progress, emits reward events on completion
+  - `RewardEventHandler` — grants items, gold, exp, materials
+  - `GachaEventHandler` — processes gacha draws, updates banner states, grants items
+  - `DeckEventHandler` — validates deck constraints, updates deck state
+  - `StaminaEventHandler` — checks/consume stamina, handles refill timers
+  - `AchievementEventHandler` — checks milestones, grants achievement rewards
+  - `InventoryEventHandler` — tracks item counts, weapon/costume/character states
+  - `DiffEventHandler` — subscribes to events, accumulates diff entries
+- **Command layer** — gRPC handlers that validate, emit events, collect diffs, return responses.
 - Interceptor stack (tower middleware):
   1. **Platform** — parse `x-apb-platform` header.
   2. **Logging** — `tracing::info!` per RPC.
-  3. **Diff** — load `UserState` before/after, compute delta, attach to response.
+  3. **Diff** — collect `DiffEntry` from event handlers, attach to response.
   4. **TimeSync** — attach `x-apb-response-datetime` trailer.
-- `CurrentUserId` — extract session key from gRPC metadata → resolve via
-  `SessionRepository`.
-- `UserService` — uses `auth::AuthStore` and `auth::resolve_facebook_token` directly
-  (no HTTP call to external auth server).
-- Supervisor actor managing all service actor lifecycles.
+- `CurrentUserId` — extract session key from gRPC metadata → resolve via `SessionRepository`.
+- `UserService` — uses `auth::AuthStore` and `auth::resolve_facebook_token` directly.
+- Supervisor actor managing all service and event handler actor lifecycles.
 
-**Actor hierarchy:** `GameServer` supervisor → 28+ service actors (User, Quest, Gacha,
-Battle, Deck, Character, Weapon, Costume, Shop, Explore, CharacterBoard, Gimmick,
-BigHunt, Labyrinth, Tower, SideStoryQuest, LoginBonus, Mission, Gift, Notification,
-Tutorial, Config, Data, Banner, GamePlay, CageOrnament, NaviCutIn, ContentsStory,
-Dokan, PortalCage, Movie, Omikuji, Parts, Material, ConsumableItem, Companion,
-Friend, Reward).
+**Event flow:**
+```
+gRPC Request
+  → Command Handler (validate + emit GameEvent)
+    → Event Bus dispatches to handlers
+      → QuestEventHandler: store.update_quest() + returns diff entries
+      → RewardEventHandler: store.grant_items() + returns diff entries
+      → StaminaEventHandler: store.consume_stamina() + returns diff entries
+    → Command Handler collects Vec<DiffEntry>
+    → DiffSet::into_protobuf() → attach to response
+  → gRPC Response with DiffUserData
+```
 
-**Relationships:** Depends on `core`, `store`, `diff-engine`, `master-data`, `auth`.
+**Actor hierarchy:**
+```
+GameServer (supervisor)
+├── UserService (gRPC + kameo actor)
+├── QuestService (gRPC + kameo actor)
+├── ... (28 gRPC service actors)
+├── QuestEventHandler (event handler)
+├── RewardEventHandler (event handler)
+├── GachaEventHandler (event handler)
+├── StaminaEventHandler (event handler)
+├── InventoryEventHandler (event handler)
+├── AchievementEventHandler (event handler)
+└── DiffEventHandler (event handler)
+```
+
+**Relationships:** Depends on `core`, `store`, `diff-sync`, `master-data`, `auth`.
 Top-level server — no reverse dependencies.
 
 ---
@@ -285,7 +330,7 @@ Decrypt → decompress → deserialize → named columns → JSON.
 └────┬─────┘    └───────┬────────┘    └────────────────┘
      │                  │
      │          ┌───────▼────────┐
-     └─────────►│  diff-engine   │
+     └─────────►│  diff-sync     │
                 └────────────────┘
 
 ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
@@ -300,8 +345,11 @@ Tools: gen-entities, patch-masterdata, dump-masterdata
 
 ```
 Client ──gRPC──► game-server
-                    ├──► store (load/update UserState)
-                    ├──► diff-engine (compute delta before/after)
+                    ├──► Command Handler (validate + emit GameEvent)
+                    │       ├──► QuestEventHandler → store + diff entries
+                    │       ├──► RewardEventHandler → store + diff entries
+                    │       └──► StaminaEventHandler → store + diff entries
+                    ├──► diff-sync (accumulate DiffEntry → DiffData)
                     ├──► master-data (read catalogs via watch)
                     └──► auth (validate FB token via Facebook Graph API)
 
