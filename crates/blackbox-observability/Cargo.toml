@@ -11,5 +11,6 @@ opentelemetry_sdk = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 tracing-opentelemetry = { workspace = true }
+blackbox-core = { path = "../blackbox-core" }
 
 [dev-dependencies]
