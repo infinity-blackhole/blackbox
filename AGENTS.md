@@ -11,9 +11,12 @@ Clean-room Rust reimplementation of the NieR Re[in]carnation private server.
 | Concern | Crate |
 |---------|-------|
 | Async runtime | `tokio` (full features) |
-| gRPC | `tonic` + `prost` (via `blackbox-game-server`) |
-| HTTP (CDN/Auth) | `axum` + `tower` |
-| Admin gRPC API | `tonic` + `prost` (via `blackbox-api`) |
+| gRPC | `tonic` + `prost` (`blackbox-game-server`, `blackbox-api`) |
+| HTTP (CDN/Auth) | `axum` + `tower` (`blackbox-assets-server`, `blackbox-auth-server`) |
+| Auth library | `blackbox-auth` (lib, used by game-server or auth-server) |
+| Admin API | `tonic` + `prost` (`blackbox-api`) |
+| CLI | `clap` (`blackbox-cli`) |
+| Observability | `opentelemetry` + `tracing-opentelemetry` (`blackbox-observability`) |
 | Actor model | `kameo` |
 | Database | `sqlx` (SQLite, compile-time checked) |
 | Serialization | `serde` + `rmp-serde` + `prost` |

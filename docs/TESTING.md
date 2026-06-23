@@ -123,7 +123,7 @@
 |------|--------|
 | Reload with valid token | Integration: POST with correct Bearer, assert 200 + catalogs reloaded |
 | Reload with invalid token | Integration: POST with wrong Bearer, assert 401 |
-| Reload without token env | Integration: start without `LUNAR_ADMIN_TOKEN`, assert port not bound |
+| Reload without token env | Integration: start without `BLACKBOX_ADMIN_TOKEN`, assert port not bound |
 | Constant-time comparison | Unit: verify timing-independent comparison (statistical test) |
 
 ## Integration Test Suite (`tests/`)
