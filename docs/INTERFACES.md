@@ -158,6 +158,53 @@ pub struct SessionState {
 }
 ```
 
+### SchemaIR (Intermediate Representation)
+
+```rust
+pub struct SchemaIR {
+    pub tables: Vec<TableDef>,
+    pub enums: Vec<EnumDef>,
+}
+
+pub struct TableDef {
+    pub table_key: String,       // "m_quest"
+    pub class_name: String,      // "EntityMQuest"
+    pub columns: Vec<ColumnDef>,
+}
+
+pub struct ColumnDef {
+    pub index: u32,
+    pub name: String,
+    pub raw_type: String,       // "int", "long", "QuestType", etc.
+    pub is_enum: bool,
+}
+
+pub struct EnumDef {
+    pub name: String,            // "QuestType"
+    pub variants: Vec<(String, i32)>,  // [("MAIN", 1), ("EVENT", 2)]
+}
+
+pub fn parse_schemas(path: &Path) -> Result<SchemaIR> {
+    // reads schemas.json, validates, produces SchemaIR
+}
+```
+
+All entity structs and enums are generated at compile time from `schemas.json` at the project root. The `build.rs` of `blackbox-schemas` calls `blackbox-schemas-parser` to parse the JSON into `SchemaIR`, then `blackbox-schemas-codegen` generates Rust code via `quote!`. See `docs/COMPONENTS.md` → "Schema Definition" for the full format specification.
+
+```rust
+// Generated (do not edit):
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EntityMQuest {
+    pub quest_id: i32,
+    pub name_quest_text_id: i32,
+    pub quest_type: QuestType,
+    // ...
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum QuestType { MAIN = 1, EVENT = 2, SIDE_STORY = 3, /* ... */ }
+```
+
 ### `DiffEntry` and `DiffSet`
 
 ```rust
