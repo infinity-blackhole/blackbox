@@ -12,7 +12,8 @@ Clean-room Rust reimplementation of the NieR Re[in]carnation private server.
 |---------|-------|
 | Async runtime | `tokio` (full features) |
 | gRPC | `tonic` + `prost` (via `blackbox-game-server`) |
-| HTTP (CDN/Auth/Admin) | `axum` + `tower` |
+| HTTP (CDN/Auth) | `axum` + `tower` |
+| Admin gRPC API | `tonic` + `prost` (via `blackbox-api`) |
 | Actor model | `kameo` |
 | Database | `sqlx` (SQLite, compile-time checked) |
 | Serialization | `serde` + `rmp-serde` + `prost` |

@@ -26,7 +26,7 @@ blackbox/
 │   ├── game-server/              # tonic gRPC game server + kameo actors
 │   ├── cdn-server/               # axum HTTP asset CDN
 │   ├── auth-server/              # axum HTTP auth server
-│   ├── admin/                    # Admin webhook (hot reload)
+│   ├── api/                      # Admin gRPC API server (hot reload, health, metrics)
 │   └── octo-proto/               # Generated list.bin protobuf types
 └── tools/
     ├── gen-entities/             # serde_codegen from schemas.json
@@ -189,17 +189,19 @@ server — no reverse dependencies.
 
 ---
 
-### `admin` — Admin Webhook
+### `api` — Admin gRPC API Server
 
-**Dependencies:** `axum`, `tokio`, `core`, `master-data`
+**Dependencies:** `tonic`, `prost`, `tokio`, `core`, `master-data`
 
 **Provides:**
 - `POST /api/admin/master-data/reload` — constant-time Bearer token check,
   calls `master_data::reload()`.
-- Fail-closed: only binds when `LUNAR_ADMIN_TOKEN` is set.
+- Health check endpoint (`grpc.health.v1.Health`).
+- Metrics endpoint (Prometheus-compatible).
+- Fail-closed: only binds when `BLACKBOX_ADMIN_TOKEN` is set.
 - Defaults to `127.0.0.1:8082`.
 
-**Relationships:** Depends on `core`, `master-data`. Standalone.
+**Relationships:** Depends on `core`, `master-data`. Standalone gRPC service.
 
 ---
 
@@ -241,7 +243,7 @@ Decrypt → decompress → deserialize → named columns → JSON.
 └────┬─────┘    └──────────┬───────┘    └──────────────┘
      │                     │
      │            ┌────────▼───────┐
-     │            │     admin      │
+     │            │     api        │
      │            └────────────────┘
      │
 ┌────▼─────┐    ┌────────────────┐
@@ -274,8 +276,10 @@ Client ──HTTP──► cdn-server
                     ├──► asset bundles (disk, MD5-validated)
                     └──► .bin.e (master data)
 
-Admin ──HTTP──► admin
-                    └──► master-data::reload() → watch::send() → grpc-server actors
+Admin ──gRPC──► api
+                    ├──► master-data::reload() → watch::send() → game-server actors
+                    ├──► health check
+                    └──► metrics
 ```
 
 ## Configuration
@@ -311,7 +315,7 @@ cargo build --release
 cargo run -p blackbox-game-server
 cargo run -p blackbox-cdn-server
 cargo run -p blackbox-auth-server
-cargo run -p blackbox-dev          # all services
+cargo run -p blackbox-api
 cargo test --workspace
 cargo run -p gen-entities
 cargo run -p dump-masterdata -- assets/release/20240404193219.bin.e ./dump

@@ -256,6 +256,12 @@ apb.api.labyrinth  — LabyrinthService
 apb.api.banner     — BannerService
 ```
 
+### Admin API (`blackbox-api`)
+
+```
+apb.api.admin      — AdminService (ReloadMasterData, HealthCheck, GetMetrics)
+```
+
 ### Common Response Pattern
 
 Every gRPC response that mutates user state includes:
