@@ -1,10 +1,10 @@
-# Lunar Tear — Rust Rewrite
+# Blackbox — Lunar Tear Rust Rewrite
 
 Clean-room Rust reimplementation of the NieR Re[in]carnation private server.
 
 **Language:** Rust 2024 edition (MSRV TBD, targeting latest stable)
 **License:** AGPL-3.0
-**Repo:** `github.com/infinity-blackhole/lunar-tear-rs`
+**Repo:** `github.com/infinity-blackhole/blackbox`
 
 ## Stack
 
