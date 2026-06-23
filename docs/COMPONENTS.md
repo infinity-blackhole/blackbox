@@ -30,8 +30,6 @@ blackbox/
 │   ├── blackbox-observability/   # OpenTelemetry + tracing
 │   ├── blackbox-cli/             # CLI (wizard, dev)
 │   └── blackbox-dev/             # Dev runner (spawns all services)
-└── tools/
-    └── gen-entities/             # Standalone schema-to-rust code generator
 ```
 
 ## Schema Definition
@@ -147,6 +145,9 @@ Three modules in one crate:
 - `inspect --input bin.e/ --table m_quest` — print table summary
 - `validate --input bin.e/` — validate binary integrity
 - `search --input bin.e/ --table m_quest --column QuestId --value 101` — search rows
+- `gen-entities --input schemas.json --output src/schema/generated/` — generate Rust code from schemas
+
+**Binary target:** `blackbox-masterdata` — single binary with all subcommands. The `gen-entities` subcommand is the standalone code generator for CI and IDE integration.
 
 **Build script (`build.rs`):**
 - Calls `parse_schemas("schemas.json")` → `generate_schemas()` → writes generated code to `src/schema/generated/`
@@ -370,29 +371,7 @@ GameServer (supervisor)
 **Provides:**
 - Single binary that spawns all three services in-process for local development.
 - Watches for `.bin.e` changes and triggers reload.
-
 **Relationships:** Depends on all server crates. Entrypoint for `cargo run`.
-
----
-
-## Tool Crates
-
-### `gen-entities` — Standalone Schema Code Generator
-
-**Dependencies:** `serde`, `serde_json`, `quote`, `syn`, `proc-macro2`, `clap`
-
-**Provides:** A standalone binary for offline code generation:
-
-```
-gen-entities --input schemas.json --output crates/blackbox-master-data/src/schema/generated/
-```
-
-This is a thin wrapper around `blackbox_master_data::schema` for use in CI
-(generated code drift checks) and IDE tooling. The primary code generation
-happens via `build.rs` inside `blackbox-master-data`.
-
-**Relationships:** Depends on the same schema types as `blackbox-master-data`.
-No reverse dependencies.
 
 ---
 
