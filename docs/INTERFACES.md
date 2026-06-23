@@ -194,7 +194,6 @@ pub fn key_fields_for_table(table: &TableId) -> Option<&[&str]>;
 
 ### `AppConfig`
 
-```rust
 pub struct AppConfig {
     pub game_server: GameServerConfig,
     pub assets_server: AssetsServerConfig,
