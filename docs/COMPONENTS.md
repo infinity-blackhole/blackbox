@@ -3,7 +3,7 @@
 ## Workspace Structure
 
 ```
-lunar-tear-rs/
+blackbox/
 ├── Cargo.toml                    # workspace root
 ├── AGENTS.md
 ├── flake.nix                     # Nix dev shell
@@ -23,7 +23,7 @@ lunar-tear-rs/
 │   ├── master-data/              # bin.e decrypt → decompress → deserialize
 │   ├── diff-engine/              # Incremental state sync computation
 │   ├── store/                    # sqlx SQLite user data persistence
-│   ├── grpc-server/              # tonic gRPC game server + kameo actors
+│   ├── game-server/              # tonic gRPC game server + kameo actors
 │   ├── cdn-server/               # axum HTTP asset CDN
 │   ├── auth-server/              # axum HTTP auth server
 │   ├── admin/                    # Admin webhook (hot reload)
@@ -129,7 +129,7 @@ Indexed: `uuid`, `facebook_id`, `player_id`.
 
 ---
 
-### `grpc-server` — Game Server
+### `game-server` — Game Server
 
 **Dependencies:** `tonic`, `prost`, `tokio`, `kameo`, `tracing`, `core`, `store`,
 `diff-engine`, `master-data`
@@ -245,7 +245,7 @@ Decrypt → decompress → deserialize → named columns → JSON.
      │            └────────────────┘
      │
 ┌────▼─────┐    ┌────────────────┐
-│  store   │◄───│  grpc-server   │
+│  store   │◄───│  game-server   │
 └────┬─────┘    └───────┬────────┘
      │                  │
      │          ┌───────▼────────┐
@@ -263,7 +263,7 @@ Tools: gen-entities, patch-masterdata, dump-masterdata
 ## Data Flow
 
 ```
-Client ──gRPC──► grpc-server
+Client ──gRPC──► game-server
                     ├──► store (load/update UserState)
                     ├──► diff-engine (compute delta before/after)
                     ├──► master-data (read catalogs via watch)
@@ -308,10 +308,10 @@ path = "assets/release/20240404193219.bin.e"
 
 ```bash
 cargo build --release
-cargo run -p lunar-tear-grpc-server
-cargo run -p lunar-tear-cdn-server
-cargo run -p lunar-tear-auth-server
-cargo run -p lunar-tear-dev          # all services
+cargo run -p blackbox-game-server
+cargo run -p blackbox-cdn-server
+cargo run -p blackbox-auth-server
+cargo run -p blackbox-dev          # all services
 cargo test --workspace
 cargo run -p gen-entities
 cargo run -p dump-masterdata -- assets/release/20240404193219.bin.e ./dump
