@@ -16,21 +16,19 @@ blackbox/
 │   │   ├── quest.proto
 │   │   ├── gacha.proto
 │   │   └── ... (28 services)
-│   ├── apb/admin.proto           # Admin gRPC API
 │   └── octo.proto                # Asset catalog protobuf
-├── blackbox-core/                # Shared types, errors, config, clock
-├── blackbox-schemas/             # Generated entity structs from schemas.json
-├── blackbox-master-data/         # bin.e decrypt → decompress → deserialize
-├── blackbox-diff-engine/         # Incremental state sync computation
-├── blackbox-store/               # sqlx SQLite user data persistence
-├── blackbox-game-server/         # tonic gRPC game server + kameo actors
-├── blackbox-assets-server/       # axum HTTP asset CDN
-├── blackbox-auth/                # Auth library (token validation, AuthStore)
-├── blackbox-auth-server/         # Thin binary wrapping blackbox-auth as HTTP server
-├── blackbox-api/                 # Admin gRPC API server (hot reload, health, metrics)
-├── blackbox-octo-proto/          # Generated list.bin protobuf types
-├── blackbox-cli/                 # Unified CLI (clap-based) for all admin ops
-├── blackbox-observability/       # OpenTelemetry tracing, metrics, logging
+├── crates/
+│   ├── core/                     # Shared types, errors, config, clock
+│   ├── schemas/                  # Generated entity structs from schemas.json
+│   ├── master-data/              # bin.e decrypt → decompress → deserialize
+│   ├── diff-engine/              # Incremental state sync computation
+│   ├── store/                    # sqlx SQLite user data persistence
+│   ├── auth/                     # Auth library (token validation, Facebook resolve)
+│   ├── game-server/              # tonic gRPC game server + kameo actors
+│   ├── assets-server/            # axum HTTP asset CDN
+│   ├── admin/                    # Admin API (hot reload)
+│   ├── observability/            # OpenTelemetry + tracing
+│   └── cli/                      # CLI (wizard, dev)
 └── tools/
     ├── gen-entities/             # serde_codegen from schemas.json
     ├── patch-masterdata/         # Time-gate removal tool
@@ -50,7 +48,7 @@ blackbox/
   Stored as `Arc<MasterDataCatalogs>` behind a `tokio::sync::watch` channel.
 - `GameClock` — `fn now() -> OffsetDateTime` / `fn now_millis() -> i64`.
   Injectable for tests (system clock vs. frozen clock).
-- `BlackboxError` — top-level error enum with `thiserror`, covering crypto, IO, DB,
+- `LunarError` — top-level error enum with `thiserror`, covering crypto, IO, DB,
   gRPC, deserialization, and domain errors.
 - Constants: AES key/IV, LZ4 ext code (99), original resource URL string.
 
@@ -88,7 +86,7 @@ No internal dependencies.
 - `reload(path: &Path, sender: &watch::Sender>)` — rebuild + atomic swap + mtime bump.
 
 **Relationships:** Depends on `core`, `schemas`. Used by `game-server` (startup),
-`api` (reload webhook), and tools.
+`admin` (reload webhook), and tools.
 
 ---
 
@@ -107,7 +105,7 @@ No internal dependencies.
 
 **Design:** Pure computation — no async, no IO. Fully testable.
 
-**Relationships:** Depends on `core`, `store`. Used by `grpc-server` interceptor.
+**Relationships:** Depends on `core`, `store`. Used by `game-server` interceptor.
 
 ---
 
@@ -128,14 +126,34 @@ No internal dependencies.
 **Storage model:** Single row per user with JSON blob columns for nested structures.
 Indexed: `uuid`, `facebook_id`, `player_id`.
 
-**Relationships:** Depends on `core`, `store`. Used by `game-server`, `auth-server`, `diff-engine`.
+**Relationships:** Depends on `core`. Used by `game-server`, `auth`, `diff-engine`.
+
+---
+
+### `auth` — Auth Library
+
+**Dependencies:** `sqlx` (runtime-tokio, sqlite), `tokio`, `hmac`, `sha2`, `core`
+
+**Provides:**
+- `TokenService` — HMAC-based token signing/validation.
+- `AuthStore` — sqlx SQLite for auth accounts (separate `auth.db`).
+- `resolve_facebook_token(token: &str) -> Result<FacebookId>` — calls Facebook Graph API
+  to validate tokens and extract the user ID.
+- `AuthError` — token validation failures (expired, invalid, network error).
+
+**Design:** Pure library — no HTTP server. Embedded directly into `game-server`.
+The `AuthStore` uses the same `auth.db` SQLite database. The `resolve_facebook_token`
+function performs the HTTP call to Facebook's `/me` endpoint internally rather than
+delegating to a separate auth server.
+
+**Relationships:** Depends on `core`. Used by `game-server` (UserService actor).
 
 ---
 
 ### `game-server` — Game Server
 
 **Dependencies:** `tonic`, `prost`, `tokio`, `kameo`, `tracing`, `core`, `store`,
-`diff-engine`, `master-data`
+`diff-engine`, `master-data`, `auth`
 
 **Provides:**
 - 28 gRPC service implementations as kameo actors, each holding a `watch::Receiver`
@@ -145,7 +163,10 @@ Indexed: `uuid`, `facebook_id`, `player_id`.
   2. **Logging** — `tracing::info!` per RPC.
   3. **Diff** — load `UserState` before/after, compute delta, attach to response.
   4. **TimeSync** — attach `x-apb-response-datetime` trailer.
-- `CurrentUserId` — extract session key from gRPC metadata → resolve via `SessionRepository`.
+- `CurrentUserId` — extract session key from gRPC metadata → resolve via
+  `SessionRepository`.
+- `UserService` — uses `auth::AuthStore` and `auth::resolve_facebook_token` directly
+  (no HTTP call to external auth server).
 - Supervisor actor managing all service actor lifecycles.
 
 **Actor hierarchy:** `GameServer` supervisor → 28+ service actors (User, Quest, Gacha,
@@ -155,8 +176,8 @@ Tutorial, Config, Data, Banner, GamePlay, CageOrnament, NaviCutIn, ContentsStory
 Dokan, PortalCage, Movie, Omikuji, Parts, Material, ConsumableItem, Companion,
 Friend, Reward).
 
-**Relationships:** Depends on `core`, `store`, `diff-engine`, `master-data`. Top-level
-server — no reverse dependencies.
+**Relationships:** Depends on `core`, `store`, `diff-engine`, `master-data`, `auth`.
+Top-level server — no reverse dependencies.
 
 ---
 
@@ -177,49 +198,17 @@ server — no reverse dependencies.
 
 ---
 
-### `auth` — Auth Library
+### `admin` — Admin API
 
-**Dependencies:** `sqlx` (runtime-tokio, sqlite, migrate), `tokio`, `hmac`, `sha2`, `core`
-
-**Provides:**
-- `AuthStore` — sqlx SQLite (`auth.db`) for auth accounts.
-- `TokenService` — HMAC-based token signing/validation.
-- `validate_token(token: &str) -> Result<UserInfo>` — validates OAuth token.
-- `check_username(name: &str) -> Result<bool>` — username availability.
-
-**Relationships:** Depends on `core`. Used by `auth-server` (thin HTTP wrapper) and
-`game-server` (optional: for direct library call without HTTP hop).
-
----
-
-### `auth-server` — Auth HTTP Server (thin binary)
-
-**Dependencies:** `axum`, `auth`, `core`
-
-**Provides:**
-- `GET /` — OAuth token validation.
-- `GET /me` — `{ id, name }` from token.
-- `GET /check-username` — username availability.
-
-**Relationships:** Thin binary wrapping `auth` as an HTTP server. Only needed when
-network isolation between game-server and auth is required. In dev/test, `game-server`
-can use `auth` directly without the HTTP hop.
-
----
-
-### `api` — Admin gRPC API Server
-
-**Dependencies:** `tonic`, `prost`, `tokio`, `core`, `master-data`
+**Dependencies:** `axum`, `tokio`, `core`, `master-data`
 
 **Provides:**
 - `POST /api/admin/master-data/reload` — constant-time Bearer token check,
   calls `master_data::reload()`.
-- Health check endpoint (`grpc.health.v1.Health`).
-- Metrics endpoint (Prometheus-compatible).
-- Fail-closed: only binds when `BLACKBOX_ADMIN_TOKEN` is set.
+- Only binds when `LUNAR_ADMIN_TOKEN` env var is set (fail-closed).
 - Defaults to `127.0.0.1:8082`.
 
-**Relationships:** Depends on `core`, `master-data`. Standalone gRPC service.
+**Relationships:** Depends on `core`, `master-data`. Standalone.
 
 ---
 
@@ -233,49 +222,37 @@ can use `auth` directly without the HTTP hop.
 
 ---
 
-### `cli` — Unified CLI
+### `observability` — OpenTelemetry
 
-**Dependencies:** `clap`, `core`, `auth`, `master-data`, `store`, `observability`
+**Dependencies:** `opentelemetry`, `opentelemetry_sdk`, `tracing-opentelemetry`, `tracing`
 
 **Provides:**
-- `blackbox` CLI binary with subcommands:
-  - `blackbox serve game` — start game-server
-  - `blackbox serve cdn` — start assets-server
-  - `blackbox serve auth` — start auth-server
-  - `blackbox serve api` — start admin API server
-  - `blackbox serve all` — start all services (dev mode)
-  - `blackbox admin reload` — trigger master-data reload
-  - `blackbox admin patch-masterdata` — run patcher
-  - `blackbox admin dump-masterdata` — dump to JSON
-  - `blackbox db migrate` — run migrations
-  - `blackbox version` — print version info
+- `init_tracing(config) -> Result<Guard>` — initializes OpenTelemetry tracing with
+  OTLP exporter or stdout fallback.
+- Reusable span macros.
 
-**Relationships:** Depends on all service crates for unified operations. Uses `clap` for
-argument parsing with derive macros.
+**Relationships:** Depended on by `game-server`, `assets-server`, `admin`, `cli`.
 
 ---
 
-### `observability` — OpenTelemetry
+### `cli` — CLI Tools
 
-**Dependencies:** `opentelemetry`, `opentelemetry-otlp`, `opentelemetry_sdk`,
-`tracing`, `tracing-opentelemetry`, `core`
+**Dependencies:** `clap`, `tracing`, `core`, `master-data`, `observability`
 
 **Provides:**
-- `init_tracing() -> Result<Guard>` — initializes OpenTelemetry tracing pipeline
-  with OTLP exporter (gRPC to collector) and stdout fallback.
-- `init_metrics() -> Result<Registry>` — Prometheus-compatible metrics registry.
-- `MetricsConfig` — configuration for OTLP endpoint, service name, environment.
-- Request duration histograms, error counters, active connection gauges.
-- Integration with `tracing` spans — every gRPC call and HTTP request gets a span.
+- `blackbox wizard` — interactive setup.
+- `blackbox dev` — spawns all services locally.
+- `blackbox serve` — production single-service mode.
 
-**Relationships:** Depends on `core`. Used by all server crates for observability.
+**Relationships:** Depends on `core`, `master-data`, `observability`. Spawns `game-server`,
+`assets-server`, `admin` as subprocesses or in-process.
 
 ---
 
 ## Tool Crates
 
 ### `gen-entities`
-**Input:** `schemas.json` → **Output:** `blackbox-schemas/src/lib.rs`
+**Input:** `schemas.json` → **Output:** `crates/schemas/src/lib.rs`
 Generates ~200 Rust structs with `Serialize`/`Deserialize` derives.
 
 ### `patch-masterdata`
@@ -291,37 +268,32 @@ Decrypt → decompress → deserialize → named columns → JSON.
 ## Dependency Graph
 
 ```
-                    ┌──────────────────┐
-                    │ blackbox-octo-proto│
-                    └────────┬─────────┘
-                             │
-┌──────────────┐    ┌────────▼─────────┐    ┌──────────────────┐
-│blackbox-schemas│◄───│blackbox-master-data│   │blackbox-assets-server│
-└──────┬───────┘    └────────┬─────────┘    └──────────────────┘
-       │                     │
-       │            ┌────────▼─────────┐
-       │            │   blackbox-api   │
-       │            └──────────────────┘
-       │
-┌──────▼───────┐    ┌──────────────────┐
-│blackbox-store│◄───│blackbox-game-server│
-└──────┬───────┘    └───────┬──────────┘
-       │                    │
-       │           ┌────────▼──────────┐
-       └──────────►│blackbox-diff-engine│
-                   └──────────────────┘
+                    ┌──────────────┐
+                    │  octo-proto   │
+                    └──────┬───────┘
+                           │
+┌──────────┐    ┌──────────▼───────┐    ┌──────────────┐
+│  schemas  │◄───│  master-data     │    │ assets-server│
+└────┬─────┘    └──────────┬───────┘    └──────────────┘
+     │                     │
+     │            ┌────────▼───────┐
+     │            │     admin      │
+     │            └────────────────┘
+     │
+┌────▼─────┐    ┌────────────────┐    ┌────────────────┐
+│  store   │◄───│  game-server   │───►│     auth       │
+└────┬─────┘    └───────┬────────┘    └────────────────┘
+     │                  │
+     │          ┌───────▼────────┐
+     └─────────►│  diff-engine   │
+                └────────────────┘
 
-┌──────────────────┐    ┌──────────────────┐
-│  blackbox-auth   │    │  blackbox-core   │◄── all crates
-└────────┬─────────┘    └──────────────────┘
-         │
-┌────────▼─────────┐    ┌──────────────────┐
-│blackbox-auth-server│   │blackbox-observability│
-└──────────────────┘    └──────────────────┘
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│    cli       │    │observability │    │  core        │◄── all crates
+└──────────────┘    └──────────────┘    └──────────────┘
 
-┌──────────────────┐    ┌──────────────────┐
-│  blackbox-cli    │    │  tools/*          │
-└──────────────────┘    └──────────────────┘
+Tools: gen-entities, patch-masterdata, dump-masterdata
+(consume master-data + schemas, no reverse dependencies)
 ```
 
 ## Data Flow
@@ -331,35 +303,28 @@ Client ──gRPC──► game-server
                     ├──► store (load/update UserState)
                     ├──► diff-engine (compute delta before/after)
                     ├──► master-data (read catalogs via watch)
-                    └──► auth (lib: direct call or auth-server HTTP)
+                    └──► auth (validate FB token via Facebook Graph API)
 
 Client ──HTTP──► assets-server
                     ├──► list.bin (protobuf, URL-rewritten)
                     ├──► asset bundles (disk, MD5-validated)
                     └──► .bin.e (master data)
 
-Admin ──gRPC──► api
-                    ├──► master-data::reload() → watch::send() → game-server actors
-                    ├──► health check
-                    └──► metrics
-
-CLI ──► blackbox serve all | blackbox admin reload | blackbox db migrate
+Admin ──HTTP──► admin
+                    └──► master-data::reload() → watch::send() → game-server actors
 ```
 
 ## Configuration
 
 ```toml
-[grpc]
+[game_server]
 listen = "0.0.0.0:443"
 public_addr = "127.0.0.1:443"
 
-[cdn]
+[assets_server]
 listen = "0.0.0.0:8080"
 public_addr = "127.0.0.1:8080"
 assets_dir = "."
-
-[auth]
-listen = "0.0.0.0:3000"
 
 [admin]
 listen = "127.0.0.1:8082"
@@ -378,9 +343,7 @@ path = "assets/release/20240404193219.bin.e"
 cargo build --release
 cargo run -p blackbox-game-server
 cargo run -p blackbox-assets-server
-cargo run -p blackbox-auth-server
-cargo run -p blackbox-api
-cargo run -p blackbox-cli -- serve all
+cargo run -p blackbox-dev              # all services
 cargo test --workspace
 cargo run -p gen-entities
 cargo run -p dump-masterdata -- assets/release/20240404193219.bin.e ./dump

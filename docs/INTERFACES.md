@@ -171,27 +171,22 @@ pub struct DiffData {
 
 ```rust
 pub struct AppConfig {
-    pub grpc: GrpcConfig,
-    pub cdn: CdnConfig,
-    pub auth: AuthConfig,
+    pub game_server: GameServerConfig,
+    pub assets_server: AssetsServerConfig,
     pub admin: AdminConfig,
     pub sqlite: SqliteConfig,
     pub master_data: MasterDataConfig,
 }
 
-pub struct GrpcConfig {
+pub struct GameServerConfig {
     pub listen: SocketAddr,
     pub public_addr: SocketAddr,
 }
 
-pub struct CdnConfig {
+pub struct AssetsServerConfig {
     pub listen: SocketAddr,
     pub public_addr: SocketAddr,
     pub assets_dir: PathBuf,
-}
-
-pub struct AuthConfig {
-    pub listen: SocketAddr,
 }
 
 pub struct AdminConfig {

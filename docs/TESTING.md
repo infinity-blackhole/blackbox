@@ -80,7 +80,7 @@
 
 **Test database:** In-memory SQLite (`sqlite::memory:`) for unit tests, temp file for integration tests.
 
-### `grpc-server`
+### `game-server`
 
 | Test | Method |
 |------|--------|
@@ -90,6 +90,7 @@
 | Platform extraction | Integration: set platform header, assert context has correct platform |
 | TimeSync trailer | Integration: call any method, assert `x-apb-response-datetime` trailer |
 | Auth flow end-to-end | Integration: Register → Auth → GameStart → GetUserProfile |
+| Facebook auth via auth lib | Integration: SetFacebookAccount with valid mock token, assert linked |
 | No-register mode | Integration: start with `--no-register`, assert RegisterUser fails |
 
 **Test infrastructure:**
@@ -109,13 +110,16 @@
 | Revision tracking | Integration: two requests from same addr, assert same revision |
 | h2c support | Integration: HTTP/2 cleartext request, assert 200 |
 
-### `auth-server`
+### `auth`
 
 | Test | Method |
 |------|--------|
-| Token validation | Integration: POST valid token, assert 200 with user info |
-| Invalid token | Integration: POST invalid token, assert 401 |
-| Username check | Integration: GET `/check-username`, assert availability |
+| Token signing/validation | Unit: sign token, validate, assert round-trip |
+| Token expiry | Unit: sign with past expiry, assert validation fails |
+| Invalid signature | Unit: tamper with token, assert validation fails |
+| Facebook token resolve | Unit: mock HTTP client returning `{id, name}`, assert parses correctly |
+| Facebook network error | Unit: mock HTTP client returning error, assert `AuthError::Network` |
+| AuthStore CRUD | Integration: insert/load/delete auth user in temp SQLite |
 
 ### `admin`
 
