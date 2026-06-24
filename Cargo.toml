@@ -1,17 +1,18 @@
 [workspace]
 members = [
-  "crates/blackbox-core",
-  "crates/blackbox-master-data",
-  "crates/blackbox-diff-sync",
-  "crates/blackbox-store",
-  "crates/blackbox-auth",
-  "crates/blackbox-game-server",
-  "crates/blackbox-assets-server",
-  "crates/blackbox-admin",
-  "crates/blackbox-observability",
-  "crates/blackbox-cli",
-  "crates/blackbox-dev",
-  "octo-proto",
+    "crates/blackbox-core",
+    "crates/blackbox-master-data",
+    "crates/blackbox-diff-sync",
+    "crates/blackbox-store",
+    "crates/blackbox-auth",
+    "crates/blackbox-game-server",
+    "crates/blackbox-assets-server",
+    "crates/blackbox-admin",
+    "crates/blackbox-observability",
+    "crates/blackbox-cli",
+    "crates/blackbox-dev",
+    "crates/schema",
+    "octo-proto",
 ]
 resolver = "2"
 
@@ -52,6 +53,7 @@ sqlx = { version = "0.8", features = [
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 rmp-serde = "1"
+rmp = "0.8"
 bytes = "1"
 
 # Crypto

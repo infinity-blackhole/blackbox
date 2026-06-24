@@ -3,27 +3,23 @@ name = "blackbox-master-data"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-publish = false
-build = "build.rs"
+
+[features]
+default = []
+codegen = []
 
 [dependencies]
-aes = { workspace = true }
-cbc = { workspace = true }
-lz4 = { workspace = true }
-rmp-serde = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-bytes = { workspace = true }
-thiserror = { workspace = true }
-tracing = { workspace = true }
-clap = { workspace = true }
-quote = "1"
-syn = "2"
-proc-macro2 = "1"
+blackbox-schema.path = "../schema"
+bytes.workspace = true
+rmp-serde.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
 
 [build-dependencies]
-serde_json = { workspace = true }
+blackbox-schema.path = "../schema"
+serde_json.workspace = true
 
-[dev-dependencies]
-tempfile = "3"
-insta = { workspace = true }
+[[bin]]
+name = "gen-entities"
+path = "src/bin/gen_entities.rs"
