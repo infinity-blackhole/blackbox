@@ -367,6 +367,7 @@ dependencies = [
 name = "blackbox-observability"
 version = "0.1.0"
 dependencies = [
+ "blackbox-core",
  "opentelemetry",
  "opentelemetry_sdk",
  "tracing",

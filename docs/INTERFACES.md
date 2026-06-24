@@ -10,7 +10,11 @@ pub trait UserRepository: Send + Sync + 'static {
     async fn create_user(&self, uuid: &str, platform: ClientPlatform) -> Result<i64>;
     async fn get_user_by_uuid(&self, uuid: &str) -> Result<i64>;
     async fn load_user(&self, user_id: i64) -> Result<UserState>;
-    async fn update_user(&self, user_id: i64, f: impl FnOnce(&mut UserState)) -> Result<UserState>;
+    async fn update_user(
+        &self,
+        user_id: i64,
+        f: impl FnOnce(&mut UserState),
+    ) -> Result<UserState>;
     async fn default_user_id(&self) -> Result<i64>;
     async fn set_facebook_id(&self, user_id: i64, fb_id: i64) -> Result<()>;
     async fn get_user_by_facebook_id(&self, fb_id: i64) -> Result<i64>;
@@ -248,7 +252,11 @@ pub fn generate_schemas(ir: &SchemaIR) -> TokenStream {
 }
 ```
 
-All entity structs and enums are generated at compile time from `schemas.json` at the project root. The `build.rs` of `blackbox-master-data` calls `parse_schemas()` to parse the JSON into `SchemaIR`, then `generate_schemas()` generates Rust code via `quote!`. See `docs/COMPONENTS.md` → "Schema Definition" for the full format specification.
+All entity structs and enums are generated at compile time from `schemas.json`
+at the project root. The `build.rs` of `blackbox-master-data` calls
+`parse_schemas()` to parse the JSON into `SchemaIR`, then `generate_schemas()`
+generates Rust code via `quote!`. See `docs/COMPONENTS.md` → "Schema Definition"
+for the full format specification.
 
 ```rust
 // Generated (do not edit):
@@ -300,39 +308,23 @@ pub fn key_fields_for_table(table: &TableId) -> Option<&[&str]>;
 
 ### `AppConfig`
 
-pub struct AppConfig {
-    pub game_server: GameServerConfig,
-    pub assets_server: AssetsServerConfig,
-    pub admin: AdminConfig,
-    pub sqlite: SqliteConfig,
-    pub master_data: MasterDataConfig,
-}
+pub struct AppConfig { pub game_server: GameServerConfig, pub assets_server:
+AssetsServerConfig, pub admin: AdminConfig, pub sqlite: SqliteConfig, pub
+master_data: MasterDataConfig, }
 
-pub struct GameServerConfig {
-    pub listen: SocketAddr,
-    pub public_addr: SocketAddr,
-}
+pub struct GameServerConfig { pub listen: SocketAddr, pub public_addr:
+SocketAddr, }
 
-pub struct AssetsServerConfig {
-    pub listen: SocketAddr,
-    pub public_addr: SocketAddr,
-    pub assets_dir: PathBuf,
-}
+pub struct AssetsServerConfig { pub listen: SocketAddr, pub public_addr:
+SocketAddr, pub assets_dir: PathBuf, }
 
-pub struct AdminConfig {
-    pub listen: SocketAddr,
-    pub token: Option<String>,
-}
+pub struct AdminConfig { pub listen: SocketAddr, pub token: Option<String>, }
 
-pub struct SqliteConfig {
-    pub game_db: PathBuf,
-    pub auth_db: PathBuf,
-}
+pub struct SqliteConfig { pub game_db: PathBuf, pub auth_db: PathBuf, }
 
-pub struct MasterDataConfig {
-    pub path: PathBuf,
-}
-```
+pub struct MasterDataConfig { pub path: PathBuf, }
+
+```text
 
 ## gRPC Service Contracts
 
@@ -341,51 +333,37 @@ All services are defined in `proto/apb/api/` and compiled via `tonic-build` + `p
 ### Package Structure
 
 ```
-apb.api.user       — UserService (Auth, RegisterUser, TransferUser, SetUserName, ...)
-apb.api.quest      — QuestService (StartQuest, EndQuest, ...)
-apb.api.gacha      — GachaService (Draw, ...)
-apb.api.battle     — BattleService
-apb.api.config     — ConfigService (GetConfig)
-apb.api.data       — DataService (GetLatestMasterDataVersion, GetUserData)
-apb.api.tutorial   — TutorialService
-apb.api.gift       — GiftService
-apb.api.gameplay   — GamePlayService
-apb.api.gimmick    — GimmickService
-apb.api.notification — NotificationService
-apb.api.cageornament — CageOrnamentService
-apb.api.deck       — DeckService
-apb.api.friend     — FriendService
-apb.api.loginbonus — LoginBonusService
-apb.api.navicutin  — NaviCutInService
-apb.api.contentsstory — ContentsStoryService
-apb.api.dokan      — DokanService
-apb.api.portalcage — PortalCageService
-apb.api.characterviewer — CharacterViewerService
-apb.api.mission    — MissionService
-apb.api.shop       — ShopService
-apb.api.costume    — CostumeService
-apb.api.movie      — MovieService
-apb.api.omikuji    — OmikujiService
-apb.api.weapon     — WeaponService
-apb.api.explore    — ExploreService
-apb.api.characterboard — CharacterBoardService
-apb.api.parts      — PartsService
-apb.api.character  — CharacterService
-apb.api.companion  — CompanionService
-apb.api.material   — MaterialService
-apb.api.consumableitem — ConsumableItemService
-apb.api.sidestoryquest — SideStoryQuestService
-apb.api.bighunt    — BigHuntService
-apb.api.reward     — RewardService
-apb.api.labyrinth  — LabyrinthService
-apb.api.banner     — BannerService
-```
+
+apb.api.user — UserService (Auth, RegisterUser, TransferUser, SetUserName, ...)
+apb.api.quest — QuestService (StartQuest, EndQuest, ...) apb.api.gacha —
+GachaService (Draw, ...) apb.api.battle — BattleService apb.api.config —
+ConfigService (GetConfig) apb.api.data — DataService
+(GetLatestMasterDataVersion, GetUserData) apb.api.tutorial — TutorialService
+apb.api.gift — GiftService apb.api.gameplay — GamePlayService apb.api.gimmick —
+GimmickService apb.api.notification — NotificationService apb.api.cageornament —
+CageOrnamentService apb.api.deck — DeckService apb.api.friend — FriendService
+apb.api.loginbonus — LoginBonusService apb.api.navicutin — NaviCutInService
+apb.api.contentsstory — ContentsStoryService apb.api.dokan — DokanService
+apb.api.portalcage — PortalCageService apb.api.characterviewer —
+CharacterViewerService apb.api.mission — MissionService apb.api.shop —
+ShopService apb.api.costume — CostumeService apb.api.movie — MovieService
+apb.api.omikuji — OmikujiService apb.api.weapon — WeaponService apb.api.explore
+— ExploreService apb.api.characterboard — CharacterBoardService apb.api.parts —
+PartsService apb.api.character — CharacterService apb.api.companion —
+CompanionService apb.api.material — MaterialService apb.api.consumableitem —
+ConsumableItemService apb.api.sidestoryquest — SideStoryQuestService
+apb.api.bighunt — BigHuntService apb.api.reward — RewardService
+apb.api.labyrinth — LabyrinthService apb.api.banner — BannerService
+
+```text
 
 ### Admin API (`blackbox-api`)
 
 ```
-apb.api.admin      — AdminService (ReloadMasterData, HealthCheck, GetMetrics)
-```
+
+apb.api.admin — AdminService (ReloadMasterData, HealthCheck, GetMetrics)
+
+````text
 
 ### Common Response Pattern
 
@@ -396,7 +374,7 @@ message XxxResponse {
     // ... response-specific fields ...
     map<string, DiffData> diff_user_data = N;
 }
-```
+````
 
 The `DiffData` message:
 
@@ -409,29 +387,29 @@ message DiffData {
 
 ### Trailer Contracts
 
-| Trailer | Type | When | Description |
-|---------|------|------|-------------|
-| `x-apb-response-datetime` | `string` (millis) | All RPCs except Auth/Register/Transfer | Server timestamp |
-| `x-apb-update-user-data-names` | `string` (comma-separated) | All RPCs with diff data | Changed table names |
+| Trailer                        | Type                       | When                                   | Description         |
+| ------------------------------ | -------------------------- | -------------------------------------- | ------------------- |
+| `x-apb-response-datetime`      | `string` (millis)          | All RPCs except Auth/Register/Transfer | Server timestamp    |
+| `x-apb-update-user-data-names` | `string` (comma-separated) | All RPCs with diff data                | Changed table names |
 
 ### Metadata (Request Headers)
 
-| Header | Type | Description |
-|--------|------|-------------|
+| Header              | Type     | Description                    |
+| ------------------- | -------- | ------------------------------ |
 | `x-apb-session-key` | `string` | Session key from Auth response |
-| `x-apb-platform` | `string` | `"android"` or `"ios"` |
-| `x-apb-uuid` | `string` | Client UUID |
+| `x-apb-platform`    | `string` | `"android"` or `"ios"`         |
+| `x-apb-uuid`        | `string` | Client UUID                    |
 
 ## Error Mapping
 
-| Domain Error | gRPC Status |
-|---|---|
-| User not found | `NOT_FOUND` |
-| Invalid session | `UNAUTHENTICATED` |
-| Registration disabled | `PERMISSION_DENIED` |
-| Master data not loaded | `INTERNAL` |
-| DB error | `INTERNAL` |
-| Invalid request argument | `INVALID_ARGUMENT` |
+| Domain Error             | gRPC Status         |
+| ------------------------ | ------------------- |
+| User not found           | `NOT_FOUND`         |
+| Invalid session          | `UNAUTHENTICATED`   |
+| Registration disabled    | `PERMISSION_DENIED` |
+| Master data not loaded   | `INTERNAL`          |
+| DB error                 | `INTERNAL`          |
+| Invalid request argument | `INVALID_ARGUMENT`  |
 
 ## Serialization Contracts
 
@@ -440,7 +418,8 @@ message DiffData {
 - Tables are stored as msgpack arrays of arrays: `[[col0, col1, ...], ...]`
 - Each row is deserialized into a struct by positional index
 - LZ4 compression uses msgpack ext type code 99
-- The ext header contains: `[code: int8, data: bytes]` where data = `[uncompressed_size: int32, lz4_block: bytes]`
+- The ext header contains: `[code: int8, data: bytes]` where data =
+  `[uncompressed_size: int32, lz4_block: bytes]`
 
 ### Diff Deltas (JSON)
 
@@ -451,12 +430,17 @@ message DiffData {
 ### User State (JSON blob in SQLite)
 
 - Stored as `serde_json::Value` blob per user
-- Map fields use string keys (JSON object) for UUID-keyed maps, numeric string keys for i32-keyed maps
+- Map fields use string keys (JSON object) for UUID-keyed maps, numeric string
+  keys for i32-keyed maps
 - On load: deserialize JSON → `UserState` struct
 - On save: serialize `UserState` → JSON blob
 
 ### list.bin (protobuf)
 
-- `Database` message contains `repeated Data asset_bundle_list` and `repeated Data resource_list`
-- Each `Data` has: `id`, `filepath`, `name`, `size`, `crc`, `priority`, `tag_id`, `dependencies`, `state`, `md5`, `object_name`, `generation`, `upload_version_id`
-- Resource base URL is a fixed-length (43-byte) field that must be replaced in-place
+- `Database` message contains `repeated Data asset_bundle_list` and
+  `repeated Data resource_list`
+- Each `Data` has: `id`, `filepath`, `name`, `size`, `crc`, `priority`,
+  `tag_id`, `dependencies`, `state`, `md5`, `object_name`, `generation`,
+  `upload_version_id`
+- Resource base URL is a fixed-length (43-byte) field that must be replaced
+  in-place

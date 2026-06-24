@@ -1,17 +1,17 @@
 [workspace]
 members = [
-    "crates/blackbox-core",
-    "crates/blackbox-master-data",
-    "crates/blackbox-diff-sync",
-    "crates/blackbox-store",
-    "crates/blackbox-auth",
-    "crates/blackbox-game-server",
-    "crates/blackbox-assets-server",
-    "crates/blackbox-admin",
-    "crates/blackbox-observability",
-    "crates/blackbox-cli",
-    "crates/blackbox-dev",
-    "octo-proto",
+  "crates/blackbox-core",
+  "crates/blackbox-master-data",
+  "crates/blackbox-diff-sync",
+  "crates/blackbox-store",
+  "crates/blackbox-auth",
+  "crates/blackbox-game-server",
+  "crates/blackbox-assets-server",
+  "crates/blackbox-admin",
+  "crates/blackbox-observability",
+  "crates/blackbox-cli",
+  "crates/blackbox-dev",
+  "octo-proto",
 ]
 resolver = "2"
 
@@ -41,7 +41,12 @@ http = "1"
 hyper = "1"
 
 # Database
-sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "migrate", "time"] }
+sqlx = { version = "0.8", features = [
+  "runtime-tokio",
+  "sqlite",
+  "migrate",
+  "time",
+] }
 
 # Serialization
 serde = { version = "1", features = ["derive"] }
