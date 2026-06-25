@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package apb.api;
+
+import "apb/api/data.proto";
+
+// TutorialService manages player tutorial progression.
+service TutorialService {
+  rpc GetTutorial(GetTutorialRequest) returns (GetTutorialResponse);
+  rpc UpdateTutorial(UpdateTutorialRequest) returns (UpdateTutorialResponse);
+  rpc SkipTutorial(SkipTutorialRequest) returns (SkipTutorialResponse);
+}
+
+// Request to get the current tutorial state.
+message GetTutorialRequest {
+  string uuid = 1;
+}
+
+// Response with tutorial progress.
+message GetTutorialResponse {
+  TutorialData tutorial = 1;
+}
+
+// Request to advance the tutorial to a step.
+message UpdateTutorialRequest {
+  string uuid = 1;
+  string tutorial_id = 2;
+  int32 step = 3;
+}
+
+// Response after updating tutorial progress.
+message UpdateTutorialResponse {
+  TutorialData tutorial = 1;
+  repeated DiffEntry diffs = 2;
+}
+
+// Request to skip the tutorial entirely.
+message SkipTutorialRequest {
+  string uuid = 1;
+  string tutorial_id = 2;
+}
+
+// Response after skipping the tutorial.
+message SkipTutorialResponse {
+  bool success = 1;
+  repeated DiffEntry diffs = 2;
+}
+
+// Tutorial progress data.
+message TutorialData {
+  string tutorial_id = 1;
+  int32 current_step = 2;
+  int32 total_steps = 3;
+  bool completed = 4;
+  bool skipped = 5;
+}

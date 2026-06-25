@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package apb.api;
+
+// CharacterViewerService handles character viewer (gallery/collection) functionality.
+
+service CharacterViewerService {
+  rpc GetCharacterViewer(GetCharacterViewerRequest) returns (GetCharacterViewerResponse);
+  rpc RegisterCharacter(RegisterCharacterRequest) returns (RegisterCharacterResponse);
+}
+
+message GetCharacterViewerRequest {
+  string uuid = 1;
+}
+
+message GetCharacterViewerResponse {
+  repeated ViewerCharacter characters = 1;
+  int32 total_count = 2;
+  int32 registered_count = 3;
+}
+
+message RegisterCharacterRequest {
+  string uuid = 1;
+  string character_id = 2;
+}
+
+message RegisterCharacterResponse {
+  bool success = 1;
+  ViewerCharacter registered_character = 2;
+  string error_message = 3;
+}
+
+message ViewerCharacter {
+  string character_id = 1;
+  string name = 2;
+  string description = 3;
+  int32 rarity = 4;
+  string portrait_image_path = 5;
+  bool registered = 6;
+  int64 register_time = 7;
+  int32 affection_level = 8;
+}

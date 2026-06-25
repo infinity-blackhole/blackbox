@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package apb.api;
+
+// CompanionService manages companion (pet/familiar) assignments.
+
+service CompanionService {
+  rpc GetCompanions(GetCompanionsRequest) returns (GetCompanionsResponse);
+  rpc SetCompanion(SetCompanionRequest) returns (SetCompanionResponse);
+}
+
+// Request/response messages
+
+message GetCompanionsRequest {
+  string uuid = 1;
+}
+
+message GetCompanionsResponse {
+  repeated CompanionData companions = 1;
+  int32 active_companion_id = 2;
+}
+
+message SetCompanionRequest {
+  string uuid = 1;
+  int32 companion_id = 2;
+  int32 slot_index = 3;
+}
+
+message SetCompanionResponse {
+  bool success = 1;
+  CompanionData active_companion = 2;
+}
+
+// Domain messages
+
+message CompanionData {
+  int32 companion_id = 1;
+  string name = 2;
+  int32 level = 3;
+  int32 rarity = 4;
+  string companion_type = 5;
+  map<string, int32> bonus_stats = 6;
+  bool is_active = 7;
+}

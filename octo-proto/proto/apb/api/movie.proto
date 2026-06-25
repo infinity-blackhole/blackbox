@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package apb.api;
+
+// MovieService handles in-game movie/cutscene playback tracking.
+
+service MovieService {
+  rpc GetMovies(GetMoviesRequest) returns (GetMoviesResponse);
+  rpc MarkMoviePlayed(MarkMoviePlayedRequest) returns (MarkMoviePlayedResponse);
+}
+
+message GetMoviesRequest {
+  string uuid = 1;
+}
+
+message GetMoviesResponse {
+  repeated Movie movies = 1;
+}
+
+message MarkMoviePlayedRequest {
+  string uuid = 1;
+  string movie_id = 2;
+}
+
+message MarkMoviePlayedResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message Movie {
+  string movie_id = 1;
+  string title = 2;
+  string description = 3;
+  string file_path = 4;
+  int32 duration_seconds = 5;
+  bool played = 6;
+  int64 last_played_time = 7;
+  int32 play_count = 8;
+}

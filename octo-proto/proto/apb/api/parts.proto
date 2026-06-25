@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package apb.api;
+
+// PartsService handles equipment parts (gear worn by characters).
+
+service PartsService {
+  rpc GetParts(GetPartsRequest) returns (GetPartsResponse);
+  rpc EquipParts(EquipPartsRequest) returns (EquipPartsResponse);
+  rpc EnhanceParts(EnhancePartsRequest) returns (EnhancePartsResponse);
+}
+
+// Request/response messages
+
+message GetPartsRequest {
+  string uuid = 1;
+}
+
+message GetPartsResponse {
+  repeated PartData parts = 1;
+}
+
+message EquipPartsRequest {
+  string uuid = 1;
+  int32 character_id = 2;
+  int32 part_id = 3;
+  int32 slot_index = 4;
+}
+
+message EquipPartsResponse {
+  bool success = 1;
+  EquippedPart equipped_part = 2;
+}
+
+message EnhancePartsRequest {
+  string uuid = 1;
+  int32 part_id = 2;
+  int32 enhance_level_target = 3;
+}
+
+message EnhancePartsResponse {
+  bool success = 1;
+  PartData updated_part = 2;
+  int32 cost_gold = 3;
+}
+
+// Domain messages
+
+message PartData {
+  int32 part_id = 1;
+  string name = 2;
+  int32 rarity = 3;
+  int32 enhance_level = 4;
+  int32 slot_type = 5; // 1=weapon, 2=armor, 3=accessory
+  map<string, int32> base_stats = 6;
+}
+
+message EquippedPart {
+  int32 character_id = 1;
+  int32 part_id = 2;
+  int32 slot_index = 3;
+}

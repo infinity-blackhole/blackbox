@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package apb.api;
+
+import "apb/api/data.proto";
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
+
+message GetUserRequest {
+  string uuid = 1;
+}
+
+message GetUserResponse {
+  UserData user = 1;
+  repeated DiffEntry diffs = 2;
+}
+
+message UpdateUserRequest {
+  string uuid = 1;
+  map<string, string> fields = 2;
+}
+
+message UpdateUserResponse {
+  UserData user = 1;
+  repeated DiffEntry diffs = 2;
+}
+
+message LoginRequest {
+  string uuid = 1;
+  string token = 2;
+  string version = 3;
+}
+
+message LoginResponse {
+  string session_key = 1;
+  string user_id = 2;
+  repeated DiffEntry diffs = 3;
+}
+
+message LogoutRequest {
+  string uuid = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+}
+
+message UserData {
+  string uuid = 1;
+  int64 user_id = 2;
+  int64 player_id = 3;
+  string name = 4;
+  int32 level = 5;
+  int32 exp = 6;
+  int64 gem = 7;
+  int68 coin = 8;
+  int32 stamina = 9;
+  int64 register_time = 10;
+  int64 last_login_time = 11;
+}

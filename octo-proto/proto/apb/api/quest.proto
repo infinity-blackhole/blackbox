@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package apb.api;
+
+import "apb/api/data.proto";
+
+// QuestService handles quest lifecycle and chapter progression.
+service QuestService {
+  rpc StartQuest(StartQuestRequest) returns (StartQuestResponse);
+  rpc EndQuest(EndQuestRequest) returns (EndQuestResponse);
+  rpc GetQuest(GetQuestRequest) returns (GetQuestResponse);
+  rpc GetChapter(GetChapterRequest) returns (GetChapterResponse);
+}
+
+// Request to start a quest.
+message StartQuestRequest {
+  string quest_id = 1;
+  string party_id = 2;
+}
+
+// Response after starting a quest.
+message StartQuestResponse {
+  string quest_id = 1;
+  string battle_id = 2;
+  repeated DiffEntry diffs = 3;
+}
+
+// Request to end a quest.
+message EndQuestRequest {
+  string quest_id = 1;
+  string battle_id = 2;
+  bool cleared = 3;
+}
+
+// Response after ending a quest with rewards.
+message EndQuestResponse {
+  bool cleared = 1;
+  repeated Reward rewards = 2;
+  QuestProgress progress = 3;
+  repeated DiffEntry diffs = 4;
+}
+
+// Request to fetch a single quest's status.
+message GetQuestRequest {
+  string quest_id = 1;
+}
+
+// Response with quest details.
+message GetQuestResponse {
+  QuestData quest = 1;
+}
+
+// Request to fetch a chapter's quests.
+message GetChapterRequest {
+  string chapter_id = 1;
+}
+
+// Response with all quests in a chapter.
+message GetChapterResponse {
+  ChapterData chapter = 1;
+  repeated QuestData quests = 2;
+}
+
+// Reward granted after quest completion.
+message Reward {
+  string item_id = 1;
+  int32 quantity = 2;
+}
+
+// Progress state for a quest.
+message QuestProgress {
+  int32 current_step = 1;
+  int32 total_steps = 2;
+  int64 start_time = 3;
+}
+
+// Full quest data.
+message QuestData {
+  string quest_id = 1;
+  string chapter_id = 2;
+  string name = 3;
+  string description = 4;
+  int32 required_stamina = 5;
+  int32 difficulty = 6;
+  bool unlocked = 7;
+  bool cleared = 8;
+}
+
+// Chapter grouping multiple quests.
+message ChapterData {
+  string chapter_id = 1;
+  string name = 2;
+  int32 order = 3;
+  bool unlocked = 4;
+}

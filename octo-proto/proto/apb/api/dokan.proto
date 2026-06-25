@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package apb.api;
+
+// DokanService handles dokan (narrator/guide character) messages and confirmations.
+
+service DokanService {
+  rpc GetDokan(GetDokanRequest) returns (GetDokanResponse);
+  rpc ConfirmDokan(ConfirmDokanRequest) returns (ConfirmDokanResponse);
+}
+
+message GetDokanRequest {
+  string uuid = 1;
+}
+
+message GetDokanResponse {
+  DokanMessage active_message = 1;
+  repeated DokanMessage history = 2;
+}
+
+message ConfirmDokanRequest {
+  string uuid = 1;
+  string dokan_id = 2;
+}
+
+message ConfirmDokanResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message DokanMessage {
+  string dokan_id = 1;
+  string title = 2;
+  string body_text = 3;
+  string voice_clip_path = 4;
+  int64 display_time = 5;
+  bool confirmed = 6;
+}

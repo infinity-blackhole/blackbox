@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package apb.api;
+
+// WeaponService handles weapon management including equipping, awakening, and enhancing.
+
+service WeaponService {
+  rpc GetWeapons(GetWeaponsRequest) returns (GetWeaponsResponse);
+  rpc EquipWeapon(EquipWeaponRequest) returns (EquipWeaponResponse);
+  rpc AwakenWeapon(AwakenWeaponRequest) returns (AwakenWeaponResponse);
+  rpc EnhanceWeapon(EnhanceWeaponRequest) returns (EnhanceWeaponResponse);
+}
+
+message GetWeaponsRequest {
+  string uuid = 1;
+}
+
+message GetWeaponsResponse {
+  repeated Weapon weapons = 1;
+  string equipped_weapon_id = 2;
+}
+
+message EquipWeaponRequest {
+  string uuid = 1;
+  string weapon_id = 2;
+  string character_id = 3;
+}
+
+message EquipWeaponResponse {
+  bool success = 1;
+  Weapon equipped_weapon = 2;
+  string error_message = 3;
+}
+
+message AwakenWeaponRequest {
+  string uuid = 1;
+  string weapon_id = 2;
+}
+
+message AwakenWeaponResponse {
+  bool success = 1;
+  Weapon awakened_weapon = 2;
+  string error_message = 3;
+}
+
+message EnhanceWeaponRequest {
+  string uuid = 1;
+  string weapon_id = 2;
+  int32 target_level = 3;
+}
+
+message EnhanceWeaponResponse {
+  bool success = 1;
+  Weapon enhanced_weapon = 2;
+  int32 new_level = 3;
+  string error_message = 4;
+}
+
+message Weapon {
+  string weapon_id = 1;
+  string name = 2;
+  string character_id = 3;
+  int32 rarity = 4;
+  int32 level = 5;
+  int32 max_level = 6;
+  int32 awakening_level = 7;
+  bool equipped = 8;
+  int32 attack_power = 9;
+  int32 defense = 10;
+  int32 hp = 11;
+  string icon_image_path = 12;
+  string weapon_type = 13;
+}

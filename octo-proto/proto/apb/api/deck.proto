@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package apb.api;
+
+import "apb/api/data.proto";
+
+// DeckService handles deck (party) management.
+service DeckService {
+  rpc GetDecks(GetDecksRequest) returns (GetDecksResponse);
+  rpc UpdateDeck(UpdateDeckRequest) returns (UpdateDeckResponse);
+  rpc SetDeck(SetDeckRequest) returns (SetDeckResponse);
+}
+
+// Request to fetch all decks for a player.
+message GetDecksRequest {
+  string uuid = 1;
+}
+
+// Response with all decks.
+message GetDecksResponse {
+  repeated DeckData decks = 1;
+  int32 active_deck_index = 2;
+}
+
+// Request to update deck contents.
+message UpdateDeckRequest {
+  string uuid = 1;
+  int32 deck_index = 2;
+  DeckData deck = 3;
+}
+
+// Response after updating a deck.
+message UpdateDeckResponse {
+  DeckData deck = 1;
+  repeated DiffEntry diffs = 2;
+}
+
+// Request to set the active deck.
+message SetDeckRequest {
+  string uuid = 1;
+  int32 deck_index = 2;
+}
+
+// Response after setting the active deck.
+message SetDeckResponse {
+  int32 active_deck_index = 1;
+  repeated DiffEntry diffs = 2;
+}
+
+// Deck (party) data.
+message DeckData {
+  int32 deck_index = 1;
+  string name = 2;
+  repeated DeckSlot slots = 3;
+}
+
+// Single slot in a deck.
+message DeckSlot {
+  int32 slot_index = 1;
+  string character_id = 2;
+  string weapon_id = 3;
+  string companion_id = 4;
+}

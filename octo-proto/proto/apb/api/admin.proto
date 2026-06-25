@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package apb.api;
+
+// AdminService handles administrative/management operations.
+
+service AdminService {
+  rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
+  rpc BanUser(BanUserRequest) returns (BanUserResponse);
+  rpc SendNotice(SendNoticeRequest) returns (SendNoticeResponse);
+  rpc GetSystemInfo(GetSystemInfoRequest) returns (GetSystemInfoResponse);
+}
+
+// Request/response messages
+
+message GetUsersRequest {
+  string admin_uuid = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+  string search_query = 4;
+}
+
+message GetUsersResponse {
+  repeated AdminUserData users = 1;
+  int32 total_count = 2;
+}
+
+message BanUserRequest {
+  string admin_uuid = 1;
+  string target_uuid = 2;
+  string reason = 3;
+  int32 duration_hours = 4; // 0 = permanent
+}
+
+message BanUserResponse {
+  bool success = 1;
+  string target_uuid = 2;
+  int64 ban_until = 3;
+}
+
+message SendNoticeRequest {
+  string admin_uuid = 1;
+  string title = 2;
+  string body = 3;
+  string notice_type = 4; // e.g. "maintenance", "event", "notice"
+  int32 target_audience = 5; // 0 = all, 1 = specific segment
+}
+
+message SendNoticeResponse {
+  bool success = 1;
+  int32 notice_id = 2;
+  int64 send_time = 3;
+}
+
+message GetSystemInfoRequest {
+  string admin_uuid = 1;
+}
+
+message GetSystemInfoResponse {
+  int32 online_users = 1;
+  int32 total_registered = 2;
+  string server_version = 3;
+  int64 uptime_seconds = 4;
+  float cpu_usage = 5;
+  float memory_usage = 6;
+  int32 active_sessions = 7;
+}
+
+// Domain messages
+
+message AdminUserData {
+  string uuid = 1;
+  string name = 2;
+  int32 level = 3;
+  int64 register_time = 4;
+  int64 last_login_time = 5;
+  bool is_banned = 6;
+  int64 ban_until = 7;
+}

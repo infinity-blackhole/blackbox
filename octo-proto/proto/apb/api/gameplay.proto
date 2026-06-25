@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package apb.api;
+
+import "apb/api/data.proto";
+
+// GamePlayService manages core gameplay state and updates.
+service GamePlayService {
+  rpc GetGamePlayData(GetGamePlayDataRequest) returns (GetGamePlayDataResponse);
+  rpc UpdateGamePlay(UpdateGamePlayRequest) returns (UpdateGamePlayResponse);
+}
+
+// Request to fetch gameplay data for a player.
+message GetGamePlayDataRequest {
+  string uuid = 1;
+}
+
+// Response with full gameplay state.
+message GetGamePlayDataResponse {
+  GamePlayData gameplay = 1;
+  repeated DiffEntry diffs = 2;
+}
+
+// Request to update gameplay state.
+message UpdateGamePlayRequest {
+  string uuid = 1;
+  GamePlayUpdate update = 2;
+}
+
+// Response after updating gameplay state.
+message UpdateGamePlayResponse {
+  GamePlayData gameplay = 1;
+  repeated DiffEntry diffs = 2;
+}
+
+// Core gameplay data.
+message GamePlayData {
+  int32 current_scene = 1;
+  float position_x = 2;
+  float position_y = 3;
+  float position_z = 4;
+  int32 hp = 5;
+  int32 max_hp = 6;
+  int32 mp = 7;
+  int32 max_mp = 8;
+  int32 combo_count = 9;
+  int64 play_time = 10;
+}
+
+// Update payload for gameplay state.
+message GamePlayUpdate {
+  int32 current_scene = 1;
+  float position_x = 2;
+  float position_y = 3;
+  float position_z = 4;
+  int32 hp = 5;
+  int32 mp = 6;
+  int32 combo_count = 7;
+}

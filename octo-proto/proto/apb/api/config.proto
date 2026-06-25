@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package apb.api;
+
+// ConfigService provides server configuration and maintenance status.
+service ConfigService {
+  rpc GetConfig(GetConfigRequest) returns (GetConfigResponse);
+  rpc GetMaintenance(GetMaintenanceRequest) returns (GetMaintenanceResponse);
+  rpc GetVersion(GetVersionRequest) returns (GetVersionResponse);
+}
+
+// Request to fetch server configuration.
+message GetConfigRequest {
+  string client_version = 1;
+}
+
+// Response with server configuration values.
+message GetConfigResponse {
+  map<string, string> config_entries = 1;
+  int64 server_time = 2;
+  string asset_url = 3;
+}
+
+// Request to check maintenance status.
+message GetMaintenanceRequest {}
+
+// Response with maintenance window information.
+message GetMaintenanceResponse {
+  bool in_maintenance = 1;
+  int64 start_time = 2;
+  int64 end_time = 3;
+  string message = 4;
+}
+
+// Request to get the current server version.
+message GetVersionRequest {}
+
+// Response with version information.
+message GetVersionResponse {
+  string server_version = 1;
+  string min_client_version = 2;
+  string latest_client_version = 3;
+  bool force_update = 4;
+}

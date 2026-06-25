@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package apb.api;
+
+// CostumeService handles costume management including equipping and awakening.
+
+service CostumeService {
+  rpc GetCostumes(GetCostumesRequest) returns (GetCostumesResponse);
+  rpc EquipCostume(EquipCostumeRequest) returns (EquipCostumeResponse);
+  rpc AwakenCostume(AwakenCostumeRequest) returns (AwakenCostumeResponse);
+}
+
+message GetCostumesRequest {
+  string uuid = 1;
+}
+
+message GetCostumesResponse {
+  repeated Costume costumes = 1;
+  string equipped_costume_id = 2;
+}
+
+message EquipCostumeRequest {
+  string uuid = 1;
+  string costume_id = 2;
+  string character_id = 3;
+}
+
+message EquipCostumeResponse {
+  bool success = 1;
+  Costume equipped_costume = 2;
+  string error_message = 3;
+}
+
+message AwakenCostumeRequest {
+  string uuid = 1;
+  string costume_id = 2;
+}
+
+message AwakenCostumeResponse {
+  bool success = 1;
+  Costume awakened_costume = 2;
+  string error_message = 3;
+}
+
+message Costume {
+  string costume_id = 1;
+  string name = 2;
+  string character_id = 3;
+  int32 rarity = 4;
+  int32 level = 5;
+  int32 awakening_level = 6;
+  bool equipped = 7;
+  int32 attack_power = 8;
+  int32 defense = 9;
+  int32 hp = 10;
+  string icon_image_path = 11;
+}

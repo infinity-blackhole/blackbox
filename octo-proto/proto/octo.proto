@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package octo;
+
+// Core data types used across services.
+
+message Database {
+  string id = 1;
+  string data = 2; // JSON-encoded row
+  int64 updated_at = 3;
+}
+
+message Data {
+  string key = 1;
+  bytes value = 2;
+  string type = 3;
+}
+
+message Url {
+  string id = 1;
+  string url = 2;
+  string asset_bundle = 3;
+  string hash = 4;
+  int32 size = 5;
+  int32 priority = 6;
+}
+
+message UrlMap {
+  map<string, Url> entries = 1;
+}
+
+message UrlList {
+  repeated Url urls = 1;
+}

@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package apb.api;
+
+import "apb/api/data.proto";
+
+// FriendService handles friend relationships and requests.
+service FriendService {
+  rpc GetFriends(GetFriendsRequest) returns (GetFriendsResponse);
+  rpc AddFriend(AddFriendRequest) returns (AddFriendResponse);
+  rpc RemoveFriend(RemoveFriendRequest) returns (RemoveFriendResponse);
+  rpc GetFriendRequests(GetFriendRequestsRequest) returns (GetFriendRequestsResponse);
+}
+
+// Request to fetch a player's friend list.
+message GetFriendsRequest {
+  string uuid = 1;
+}
+
+// Response with friend list.
+message GetFriendsResponse {
+  repeated FriendData friends = 1;
+}
+
+// Request to send a friend request.
+message AddFriendRequest {
+  string uuid = 1;
+  string target_player_id = 2;
+}
+
+// Response after sending a friend request.
+message AddFriendResponse {
+  bool success = 1;
+  FriendRequestData request = 2;
+  repeated DiffEntry diffs = 3;
+}
+
+// Request to remove a friend.
+message RemoveFriendRequest {
+  string uuid = 1;
+  string target_player_id = 2;
+}
+
+// Response after removing a friend.
+message RemoveFriendResponse {
+  bool success = 1;
+  repeated DiffEntry diffs = 2;
+}
+
+// Request to get pending friend requests.
+message GetFriendRequestsRequest {
+  string uuid = 1;
+}
+
+// Response with pending friend requests.
+message GetFriendRequestsResponse {
+  repeated FriendRequestData incoming = 1;
+  repeated FriendRequestData outgoing = 2;
+}
+
+// Friend data representation.
+message FriendData {
+  string player_id = 1;
+  string name = 2;
+  int32 level = 3;
+  int64 last_online_time = 4;
+  bool is_online = 5;
+}
+
+// Friend request data.
+message FriendRequestData {
+  string request_id = 1;
+  string player_id = 2;
+  string name = 3;
+  int32 level = 4;
+  int64 sent_time = 5;
+  string direction = 6;
+}

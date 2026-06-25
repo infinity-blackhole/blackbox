@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package apb.api;
+
+// ShopService handles in-game shop operations including purchases and product listings.
+
+service ShopService {
+  rpc GetShop(GetShopRequest) returns (GetShopResponse);
+  rpc PurchaseItem(PurchaseItemRequest) returns (PurchaseItemResponse);
+  rpc GetProducts(GetProductsRequest) returns (GetProductsResponse);
+}
+
+message GetShopRequest {
+  string uuid = 1;
+  string shop_id = 2;
+}
+
+message GetShopResponse {
+  ShopData shop = 1;
+  repeated ShopItem items = 2;
+  int64 refresh_time = 3;
+}
+
+message PurchaseItemRequest {
+  string uuid = 1;
+  string shop_id = 2;
+  string product_id = 3;
+  int32 quantity = 4;
+}
+
+message PurchaseItemResponse {
+  bool success = 1;
+  repeated PurchaseReward rewards = 2;
+  int64 remaining_currency = 3;
+  string error_message = 4;
+}
+
+message GetProductsRequest {
+  string uuid = 1;
+  string shop_id = 2;
+}
+
+message GetProductsResponse {
+  repeated ShopProduct products = 1;
+}
+
+message ShopData {
+  string shop_id = 1;
+  string name = 2;
+  string description = 3;
+  int64 refresh_time = 4;
+  bool is_active = 5;
+}
+
+message ShopItem {
+  string product_id = 1;
+  string item_id = 2;
+  string item_name = 3;
+  int32 quantity = 4;
+  int64 price = 5;
+  string currency_type = 6;
+  int32 stock = 7;
+  bool sold_out = 8;
+}
+
+message ShopProduct {
+  string product_id = 1;
+  string name = 2;
+  string description = 3;
+  int64 price = 4;
+  string currency_type = 5;
+  int32 stock = 6;
+  int32 purchase_limit = 7;
+  int32 purchased_count = 8;
+}
+
+message PurchaseReward {
+  string item_id = 1;
+  string item_name = 2;
+  int32 quantity = 3;
+}

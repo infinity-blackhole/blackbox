@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package apb.api;
+
+// ConsumableItemService handles consumable items (potions, food, buffs).
+
+service ConsumableItemService {
+  rpc GetConsumableItems(GetConsumableItemsRequest) returns (GetConsumableItemsResponse);
+  rpc UseItem(UseItemRequest) returns (UseItemResponse);
+}
+
+// Request/response messages
+
+message GetConsumableItemsRequest {
+  string uuid = 1;
+}
+
+message GetConsumableItemsResponse {
+  repeated ConsumableItemData items = 1;
+}
+
+message UseItemRequest {
+  string uuid = 1;
+  int32 item_id = 2;
+  int32 quantity = 3;
+  int32 target_character_id = 4;
+}
+
+message UseItemResponse {
+  bool success = 1;
+  ConsumableItemData updated_item = 2;
+  int32 remaining_quantity = 3;
+  map<string, int32> applied_effects = 4;
+}
+
+// Domain messages
+
+message ConsumableItemData {
+  int32 item_id = 1;
+  string name = 2;
+  int32 quantity = 3;
+  string effect_type = 4; // e.g. "heal", "stamina_restore", "exp_boost"
+  int32 effect_value = 5;
+  int32 max_stack = 6;
+  string description = 7;
+}

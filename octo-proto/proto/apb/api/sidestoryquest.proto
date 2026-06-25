@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package apb.api;
+
+// SideStoryQuestService handles side story quests.
+
+service SideStoryQuestService {
+  rpc GetSideStoryQuests(GetSideStoryQuestsRequest) returns (GetSideStoryQuestsResponse);
+  rpc StartSideStory(StartSideStoryRequest) returns (StartSideStoryResponse);
+  rpc EndSideStory(EndSideStoryRequest) returns (EndSideStoryResponse);
+}
+
+// Request/response messages
+
+message GetSideStoryQuestsRequest {
+  string uuid = 1;
+}
+
+message GetSideStoryQuestsResponse {
+  repeated SideStoryQuestData quests = 1;
+}
+
+message StartSideStoryRequest {
+  string uuid = 1;
+  int32 quest_id = 2;
+  repeated int32 character_ids = 3;
+}
+
+message StartSideStoryResponse {
+  string session_id = 1;
+  int64 start_time = 2;
+}
+
+message EndSideStoryRequest {
+  string uuid = 1;
+  string session_id = 2;
+  bool is_cleared = 3;
+  int32 rank = 4; // clear rank (S/A/B/C)
+}
+
+message EndSideStoryResponse {
+  bool success = 1;
+  repeated RewardItem rewards = 2;
+  int32 score = 3;
+}
+
+// Domain messages
+
+message SideStoryQuestData {
+  int32 quest_id = 1;
+  string title = 2;
+  string description = 3;
+  int32 required_level = 4;
+  int32 stamina_cost = 5;
+  bool is_cleared = 6;
+  int32 daily_remaining = 7;
+  repeated RewardItem first_clear_rewards = 8;
+}

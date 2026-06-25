@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package apb.api;
+
+import "apb/api/data.proto";
+
+// CageOrnamentService handles cage decoration and reward claiming.
+service CageOrnamentService {
+  rpc GetCageOrnament(GetCageOrnamentRequest) returns (GetCageOrnamentResponse);
+  rpc ClaimReward(ClaimRewardRequest) returns (ClaimRewardResponse);
+}
+
+// Request to get cage ornament state.
+message GetCageOrnamentRequest {
+  string uuid = 1;
+}
+
+// Response with cage ornament data.
+message GetCageOrnamentResponse {
+  CageOrnamentData cage = 1;
+}
+
+// Request to claim a cage ornament reward.
+message ClaimRewardRequest {
+  string uuid = 1;
+  string reward_id = 2;
+}
+
+// Response after claiming a cage ornament reward.
+message ClaimRewardResponse {
+  bool success = 1;
+  repeated Reward rewards = 2;
+  repeated DiffEntry diffs = 3;
+}
+
+// Cage ornament data.
+message CageOrnamentData {
+  string cage_id = 1;
+  string theme = 2;
+  repeated CageItem items = 3;
+  int32 decoration_score = 4;
+  repeated CageReward available_rewards = 5;
+}
+
+// Item placed in the cage.
+message CageItem {
+  string item_id = 1;
+  string name = 2;
+  float position_x = 3;
+  float position_y = 4;
+  float rotation = 5;
+}
+
+// Reward available from cage ornament.
+message CageReward {
+  string reward_id = 1;
+  int32 required_score = 2;
+  bool claimed = 3;
+  repeated Reward rewards = 4;
+}
+
+// Reward item.
+message Reward {
+  string item_id = 1;
+  int32 quantity = 2;
+}

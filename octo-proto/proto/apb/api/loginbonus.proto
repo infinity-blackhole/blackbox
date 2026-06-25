@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package apb.api;
+
+// LoginBonusService handles daily login rewards for players.
+
+service LoginBonusService {
+  rpc GetLoginBonus(GetLoginBonusRequest) returns (GetLoginBonusResponse);
+  rpc ClaimLoginBonus(ClaimLoginBonusRequest) returns (ClaimLoginBonusResponse);
+}
+
+message GetLoginBonusRequest {
+  string uuid = 1;
+}
+
+message GetLoginBonusResponse {
+  repeated LoginBonusReward rewards = 1;
+  int32 current_day = 2;
+  int64 last_claim_time = 3;
+  bool can_claim = 4;
+}
+
+message ClaimLoginBonusRequest {
+  string uuid = 1;
+  int32 day = 2;
+}
+
+message ClaimLoginBonusResponse {
+  repeated LoginBonusReward rewards = 1;
+  bool success = 2;
+  string error_message = 3;
+}
+
+message LoginBonusReward {
+  int32 day = 1;
+  string item_id = 2;
+  string item_name = 3;
+  int32 quantity = 4;
+  bool claimed = 5;
+}

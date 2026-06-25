@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package apb.api;
+
+import "apb/api/data.proto";
+
+// GachaService handles gacha (loot box) draws and rate queries.
+service GachaService {
+  rpc DrawGacha(DrawGachaRequest) returns (DrawGachaResponse);
+  rpc GetGachaRate(GetGachaRateRequest) returns (GetGachaRateResponse);
+  rpc GetGachaList(GetGachaListRequest) returns (GetGachaListResponse);
+}
+
+// Request to perform a gacha draw.
+message DrawGachaRequest {
+  string gacha_id = 1;
+  int32 draw_count = 2;
+  bool is_free = 3;
+}
+
+// Response with drawn items.
+message DrawGachaResponse {
+  repeated GachaResult results = 1;
+  repeated DiffEntry diffs = 2;
+}
+
+// Request to get drop rates for a gacha pool.
+message GetGachaRateRequest {
+  string gacha_id = 1;
+}
+
+// Response with rate information for rarity tiers.
+message GetGachaRateResponse {
+  string gacha_id = 1;
+  repeated GachaRate rates = 2;
+}
+
+// Request to list available gacha pools.
+message GetGachaListRequest {
+  bool active_only = 1;
+}
+
+// Response with available gacha pools.
+message GetGachaListResponse {
+  repeated GachaPool pools = 1;
+}
+
+// Single gacha draw result.
+message GachaResult {
+  string item_id = 1;
+  string item_name = 2;
+  int32 rarity = 3;
+  bool is_new = 4;
+}
+
+// Rate for a rarity tier.
+message GachaRate {
+  int32 rarity = 1;
+  float rate = 2;
+}
+
+// A gacha pool configuration.
+message GachaPool {
+  string gacha_id = 1;
+  string name = 2;
+  int64 start_time = 3;
+  int64 end_time = 4;
+  int32 cost_currency = 5;
+  string currency_id = 6;
+}

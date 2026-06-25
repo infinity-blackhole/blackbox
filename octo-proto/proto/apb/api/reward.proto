@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package apb.api;
+
+// RewardService handles reward claiming and history.
+
+service RewardService {
+  rpc GetRewards(GetRewardsRequest) returns (GetRewardsResponse);
+  rpc ClaimReward(ClaimRewardRequest) returns (ClaimRewardResponse);
+  rpc GetRewardHistory(GetRewardHistoryRequest) returns (GetRewardHistoryResponse);
+}
+
+// Request/response messages
+
+message GetRewardsRequest {
+  string uuid = 1;
+}
+
+message GetRewardsResponse {
+  repeated RewardData available_rewards = 1;
+}
+
+message ClaimRewardRequest {
+  string uuid = 1;
+  int32 reward_id = 2;
+}
+
+message ClaimRewardResponse {
+  bool success = 1;
+  repeated RewardItem claimed_items = 2;
+}
+
+message GetRewardHistoryRequest {
+  string uuid = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+}
+
+message GetRewardHistoryResponse {
+  repeated RewardHistoryEntry history = 1;
+  int32 total_count = 2;
+}
+
+// Domain messages
+
+message RewardData {
+  int32 reward_id = 1;
+  string reward_type = 2; // e.g. "daily", "weekly", "event", "achievement"
+  string title = 3;
+  string description = 4;
+  repeated RewardItem items = 5;
+  bool is_claimed = 6;
+  bool is_available = 7;
+  int64 expire_time = 8;
+}
+
+message RewardHistoryEntry {
+  int32 reward_id = 1;
+  string reward_type = 2;
+  int64 claimed_time = 3;
+  repeated RewardItem items = 4;
+}

@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package apb.api;
+
+// CharacterService manages core character progression.
+
+service CharacterService {
+  rpc GetCharacters(GetCharactersRequest) returns (GetCharactersResponse);
+  rpc EnhanceCharacter(EnhanceCharacterRequest) returns (EnhanceCharacterResponse);
+  rpc AwakenCharacter(AwakenCharacterRequest) returns (AwakenCharacterResponse);
+  rpc RebirthCharacter(RebirthCharacterRequest) returns (RebirthCharacterResponse);
+}
+
+// Request/response messages
+
+message GetCharactersRequest {
+  string uuid = 1;
+}
+
+message GetCharactersResponse {
+  repeated CharacterData characters = 1;
+}
+
+message EnhanceCharacterRequest {
+  string uuid = 1;
+  int32 character_id = 2;
+}
+
+message EnhanceCharacterResponse {
+  bool success = 1;
+  CharacterData updated_character = 2;
+  int32 cost_gold = 3;
+}
+
+message AwakenCharacterRequest {
+  string uuid = 1;
+  int32 character_id = 2;
+}
+
+message AwakenCharacterResponse {
+  bool success = 1;
+  CharacterData updated_character = 2;
+  repeated int32 unlocked_abilities = 3;
+}
+
+message RebirthCharacterRequest {
+  string uuid = 1;
+  int32 character_id = 2;
+}
+
+message RebirthCharacterResponse {
+  bool success = 1;
+  CharacterData updated_character = 2;
+  repeated RewardItem rebirth_rewards = 3;
+}
+
+// Domain messages
+
+message CharacterData {
+  int32 character_id = 1;
+  string name = 2;
+  int32 level = 3;
+  int32 exp = 4;
+  int32 rarity = 5;
+  int32 awaken_level = 6;
+  int32 rebirth_count = 7;
+  int32 combat_power = 8;
+  repeated int32 equipped_part_ids = 9;
+}

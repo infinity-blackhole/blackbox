@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package apb.api;
+
+// MaterialService handles crafting/enhancement materials.
+
+service MaterialService {
+  rpc GetMaterials(GetMaterialsRequest) returns (GetMaterialsResponse);
+  rpc UseMaterial(UseMaterialRequest) returns (UseMaterialResponse);
+}
+
+// Request/response messages
+
+message GetMaterialsRequest {
+  string uuid = 1;
+}
+
+message GetMaterialsResponse {
+  repeated MaterialData materials = 1;
+}
+
+message UseMaterialRequest {
+  string uuid = 1;
+  int32 material_id = 2;
+  int32 quantity = 3;
+  string use_target = 4; // e.g. "enhance", "craft", "awaken"
+}
+
+message UseMaterialResponse {
+  bool success = 1;
+  MaterialData updated_material = 2;
+  int32 remaining_quantity = 3;
+}
+
+// Domain messages
+
+message MaterialData {
+  int32 material_id = 1;
+  string name = 2;
+  int32 rarity = 3;
+  int32 quantity = 4;
+  string material_type = 5; // e.g. "enhancement", "evolution", "skill_up"
+  string description = 6;
+}

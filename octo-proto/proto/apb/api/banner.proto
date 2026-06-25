@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package apb.api;
+
+// BannerService handles gacha/draw banner data.
+
+service BannerService {
+  rpc GetBanners(GetBannersRequest) returns (GetBannersResponse);
+}
+
+// Request/response messages
+
+message GetBannersRequest {
+  string uuid = 1;
+}
+
+message GetBannersResponse {
+  repeated BannerData banners = 1;
+}
+
+// Domain messages
+
+message BannerData {
+  int32 banner_id = 1;
+  string name = 2;
+  string banner_type = 3; // e.g. "standard", "limited", "weapon"
+  int64 start_time = 4;
+  int64 end_time = 5;
+  string description = 6;
+  repeated BannerRateUp rate_up_characters = 7;
+  int32 cost_per_draw = 8; // currency cost
+  int32 draw_type = 9; // 1=single, 10=tenfold
+  bool is_active = 10;
+}
+
+message BannerRateUp {
+  int32 character_id = 1;
+  string character_name = 2;
+  int32 rate_up_percentage = 3;
+}

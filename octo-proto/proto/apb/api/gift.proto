@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package apb.api;
+
+import "apb/api/data.proto";
+
+// GiftService handles gift claiming and sending between players.
+service GiftService {
+  rpc GetGifts(GetGiftsRequest) returns (GetGiftsResponse);
+  rpc ClaimGift(ClaimGiftRequest) returns (ClaimGiftResponse);
+  rpc SendGift(SendGiftRequest) returns (SendGiftResponse);
+}
+
+// Request to list available gifts for a player.
+message GetGiftsRequest {
+  string uuid = 1;
+}
+
+// Response with available gifts.
+message GetGiftsResponse {
+  repeated GiftData gifts = 1;
+}
+
+// Request to claim a single gift.
+message ClaimGiftRequest {
+  string uuid = 1;
+  string gift_id = 2;
+}
+
+// Response after claiming a gift.
+message ClaimGiftResponse {
+  GiftData gift = 1;
+  repeated Reward rewards = 2;
+  repeated DiffEntry diffs = 3;
+}
+
+// Request to send a gift to another player.
+message SendGiftRequest {
+  string sender_uuid = 1;
+  string recipient_uuid = 2;
+  string gift_id = 3;
+}
+
+// Response after sending a gift.
+message SendGiftResponse {
+  bool success = 1;
+  string gift_id = 2;
+  repeated DiffEntry diffs = 3;
+}
+
+// Gift data representation.
+message GiftData {
+  string gift_id = 1;
+  string sender_id = 2;
+  string sender_name = 3;
+  string item_id = 4;
+  int32 quantity = 5;
+  int64 received_time = 6;
+  bool claimed = 7;
+}
+
+// Reward contained in a gift.
+message Reward {
+  string item_id = 1;
+  int32 quantity = 2;
+}

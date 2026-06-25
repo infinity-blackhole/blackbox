@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package apb.api;
+
+// OmikujiService handles fortune lottery (omikuji) draws and status.
+
+service OmikujiService {
+  rpc DrawOmikuji(DrawOmikujiRequest) returns (DrawOmikujiResponse);
+  rpc GetOmikujiStatus(GetOmikujiStatusRequest) returns (GetOmikujiStatusResponse);
+}
+
+message DrawOmikujiRequest {
+  string uuid = 1;
+  string omikuji_id = 2;
+  DrawType draw_type = 3;
+}
+
+message DrawOmikujiResponse {
+  bool success = 1;
+  OmikujiResult result = 2;
+  string error_message = 3;
+}
+
+message GetOmikujiStatusRequest {
+  string uuid = 1;
+  string omikuji_id = 2;
+}
+
+message GetOmikujiStatusResponse {
+  OmikujiStatus status = 1;
+}
+
+message OmikujiResult {
+  int32 fortune_level = 1;
+  string fortune_name = 2;
+  string message = 3;
+  OmikujiReward reward = 4;
+}
+
+message OmikujiReward {
+  string item_id = 1;
+  string item_name = 2;
+  int32 quantity = 3;
+}
+
+message OmikujiStatus {
+  string omikuji_id = 1;
+  int32 daily_draws_remaining = 2;
+  int32 max_daily_draws = 3;
+  int64 last_draw_time = 4;
+  int64 reset_time = 5;
+}
+
+enum DrawType {
+  DRAW_TYPE_SINGLE = 0;
+  DRAW_TYPE_TENFOLD = 1;
+}

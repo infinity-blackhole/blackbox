@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package apb.api;
+
+// BigHuntService handles large-scale boss hunts (co-op / raid encounters).
+
+service BigHuntService {
+  rpc GetBigHunt(GetBigHuntRequest) returns (GetBigHuntResponse);
+  rpc StartBigHunt(StartBigHuntRequest) returns (StartBigHuntResponse);
+  rpc EndBigHunt(EndBigHuntRequest) returns (EndBigHuntResponse);
+  rpc GetBigHuntProgress(GetBigHuntProgressRequest) returns (GetBigHuntProgressResponse);
+}
+
+// Request/response messages
+
+message GetBigHuntRequest {
+  string uuid = 1;
+}
+
+message GetBigHuntResponse {
+  repeated BigHuntData hunts = 1;
+}
+
+message StartBigHuntRequest {
+  string uuid = 1;
+  int32 boss_id = 2;
+  repeated int32 character_ids = 3;
+}
+
+message StartBigHuntResponse {
+  string hunt_session_id = 1;
+  int64 start_time = 2;
+  int64 boss_current_hp = 3;
+}
+
+message EndBigHuntRequest {
+  string uuid = 1;
+  string hunt_session_id = 2;
+  int64 damage_dealt = 3;
+  bool is_defeated = 4;
+}
+
+message EndBigHuntResponse {
+  bool success = 1;
+  bool is_defeated = 2;
+  repeated RewardItem rewards = 3;
+  int32 contribution_rank = 4;
+}
+
+message GetBigHuntProgressRequest {
+  string uuid = 1;
+  string hunt_session_id = 2;
+}
+
+message GetBigHuntProgressResponse {
+  int64 boss_current_hp = 1;
+  int64 boss_max_hp = 2;
+  int64 total_damage_dealt = 3;
+  int32 participant_count = 4;
+  int64 time_remaining = 5; // seconds
+}
+
+// Domain messages
+
+message BigHuntData {
+  int32 boss_id = 1;
+  string boss_name = 2;
+  int32 required_power = 3;
+  int64 hp = 4;
+  int32 entry_count = 5; // remaining entries today
+  int32 max_entries = 6;
+  bool is_active = 7;
+  repeated RewardItem rewards = 8;
+  int64 end_time = 9;
+}

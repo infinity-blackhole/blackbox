@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package apb.api;
+
+// CharacterBoardService manages character ability/perk boards.
+
+service CharacterBoardService {
+  rpc GetCharacterBoard(GetCharacterBoardRequest) returns (GetCharacterBoardResponse);
+  rpc ActivateBoard(ActivateBoardRequest) returns (ActivateBoardResponse);
+}
+
+// Request/response messages
+
+message GetCharacterBoardRequest {
+  string uuid = 1;
+  int32 character_id = 2;
+}
+
+message GetCharacterBoardResponse {
+  CharacterBoardData board = 1;
+}
+
+message ActivateBoardRequest {
+  string uuid = 1;
+  int32 character_id = 2;
+  int32 node_id = 3;
+}
+
+message ActivateBoardResponse {
+  bool success = 1;
+  CharacterBoardData updated_board = 2;
+  repeated int32 activated_nodes = 3;
+}
+
+// Domain messages
+
+message CharacterBoardData {
+  int32 character_id = 1;
+  repeated BoardNode nodes = 2;
+  int32 current_rank = 3;
+}
+
+message BoardNode {
+  int32 node_id = 1;
+  string node_type = 2; // e.g. "stat", "ability", "passive"
+  bool is_activated = 3;
+  int32 cost = 4;
+  map<string, int32> stat_bonuses = 5;
+  repeated int32 prerequisite_node_ids = 6;
+}

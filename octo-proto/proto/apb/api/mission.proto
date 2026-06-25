@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package apb.api;
+
+// MissionService handles mission tracking including daily, weekly, and permanent missions.
+
+service MissionService {
+  rpc GetMissions(GetMissionsRequest) returns (GetMissionsResponse);
+  rpc ClaimMission(ClaimMissionRequest) returns (ClaimMissionResponse);
+  rpc GetDailyMissions(GetDailyMissionsRequest) returns (GetDailyMissionsResponse);
+  rpc GetWeeklyMissions(GetWeeklyMissionsRequest) returns (GetWeeklyMissionsResponse);
+}
+
+message GetMissionsRequest {
+  string uuid = 1;
+}
+
+message GetMissionsResponse {
+  repeated Mission missions = 1;
+}
+
+message ClaimMissionRequest {
+  string uuid = 1;
+  string mission_id = 2;
+}
+
+message ClaimMissionResponse {
+  bool success = 1;
+  repeated MissionReward rewards = 2;
+  string error_message = 3;
+}
+
+message GetDailyMissionsRequest {
+  string uuid = 1;
+}
+
+message GetDailyMissionsResponse {
+  repeated Mission missions = 1;
+  int64 daily_reset_time = 2;
+}
+
+message GetWeeklyMissionsRequest {
+  string uuid = 1;
+}
+
+message GetWeeklyMissionsResponse {
+  repeated Mission missions = 1;
+  int64 weekly_reset_time = 2;
+}
+
+message Mission {
+  string mission_id = 1;
+  string title = 2;
+  string description = 3;
+  MissionType mission_type = 4;
+  int32 progress = 5;
+  int32 target = 6;
+  bool completed = 7;
+  bool claimed = 8;
+  int64 expire_time = 9;
+}
+
+message MissionReward {
+  string item_id = 1;
+  string item_name = 2;
+  int32 quantity = 3;
+}
+
+enum MissionType {
+  MISSION_TYPE_DAILY = 0;
+  MISSION_TYPE_WEEKLY = 1;
+  MISSION_TYPE_PERMANENT = 2;
+  MISSION_TYPE_EVENT = 3;
+}

@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package apb.api;
+
+// NaviCutInService handles navigation cut-in events (story popups during map navigation).
+
+service NaviCutInService {
+  rpc GetNaviCutIn(GetNaviCutInRequest) returns (GetNaviCutInResponse);
+  rpc MarkPlayed(MarkPlayedRequest) returns (MarkPlayedResponse);
+}
+
+message GetNaviCutInRequest {
+  string uuid = 1;
+}
+
+message GetNaviCutInResponse {
+  repeated NaviCutInEvent events = 1;
+}
+
+message MarkPlayedRequest {
+  string uuid = 1;
+  string event_id = 2;
+}
+
+message MarkPlayedResponse {
+  bool success = 1;
+  string error_message = 2;
+}
+
+message NaviCutInEvent {
+  string event_id = 1;
+  string character_id = 2;
+  string dialogue_text = 3;
+  int32 trigger_map_id = 4;
+  bool played = 5;
+  string voice_clip_path = 6;
+}

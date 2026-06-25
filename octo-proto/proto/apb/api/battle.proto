@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package apb.api;
+
+import "apb/api/data.proto";
+
+// BattleService handles battle execution and result retrieval.
+service BattleService {
+  rpc StartBattle(StartBattleRequest) returns (StartBattleResponse);
+  rpc EndBattle(EndBattleRequest) returns (EndBattleResponse);
+  rpc GetBattleResult(GetBattleResultRequest) returns (GetBattleResultResponse);
+}
+
+// Request to start a battle instance.
+message StartBattleRequest {
+  string quest_id = 1;
+  string party_id = 2;
+  repeated string character_ids = 3;
+}
+
+// Response with battle session details.
+message StartBattleResponse {
+  string battle_id = 1;
+  string quest_id = 2;
+  BattleState initial_state = 3;
+  repeated DiffEntry diffs = 4;
+}
+
+// Request to end a battle.
+message EndBattleRequest {
+  string battle_id = 1;
+  bool victory = 2;
+  int32 turn_count = 3;
+  int32 damage_dealt = 4;
+  int32 damage_taken = 5;
+}
+
+// Response with battle outcome and rewards.
+message EndBattleResponse {
+  bool victory = 1;
+  int32 rank = 2;
+  repeated Reward rewards = 3;
+  BattleStats stats = 4;
+  repeated DiffEntry diffs = 5;
+}
+
+// Request to retrieve a past battle result.
+message GetBattleResultRequest {
+  string battle_id = 1;
+}
+
+// Response with full battle result data.
+message GetBattleResultResponse {
+  string battle_id = 1;
+  bool victory = 2;
+  BattleStats stats = 3;
+  repeated Reward rewards = 4;
+}
+
+// Initial battle state sent on start.
+message BattleState {
+  int32 wave = 1;
+  int32 total_waves = 2;
+  repeated BattleEnemy enemies = 3;
+}
+
+// Enemy encountered in battle.
+message BattleEnemy {
+  string enemy_id = 1;
+  int32 hp = 2;
+  int32 max_hp = 3;
+  int32 attack = 4;
+  int32 defense = 5;
+}
+
+// Aggregated battle statistics.
+message BattleStats {
+  int32 total_damage_dealt = 1;
+  int32 total_damage_taken = 2;
+  int32 turns_elapsed = 3;
+  int32 enemies_defeated = 4;
+}
+
+// Reward granted after battle.
+message Reward {
+  string item_id = 1;
+  int32 quantity = 2;
+}

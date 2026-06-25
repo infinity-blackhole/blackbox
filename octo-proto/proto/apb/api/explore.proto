@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package apb.api;
+
+// ExploreService handles exploration/dungeon-crawling gameplay.
+
+service ExploreService {
+  rpc GetExplore(GetExploreRequest) returns (GetExploreResponse);
+  rpc StartExplore(StartExploreRequest) returns (StartExploreResponse);
+  rpc EndExplore(EndExploreRequest) returns (EndExploreResponse);
+}
+
+// Request/response messages
+
+message GetExploreRequest {
+  string uuid = 1;
+}
+
+message GetExploreResponse {
+  repeated ExploreInfo explore_areas = 1;
+}
+
+message StartExploreRequest {
+  string uuid = 1;
+  int32 explore_area_id = 2;
+  repeated int32 character_ids = 3;
+}
+
+message StartExploreResponse {
+  string explore_session_id = 1;
+  int64 start_time = 2;
+  int64 end_time = 3;
+}
+
+message EndExploreRequest {
+  string uuid = 1;
+  string explore_session_id = 2;
+}
+
+message EndExploreResponse {
+  bool success = 1;
+  repeated RewardItem rewards = 2;
+}
+
+// Domain messages
+
+message ExploreInfo {
+  int32 explore_area_id = 1;
+  string name = 2;
+  int32 required_stamina = 3;
+  int32 estimated_time = 4; // seconds
+  repeated RewardItem possible_rewards = 5;
+  bool is_unlocked = 6;
+}
+
+message RewardItem {
+  int32 item_id = 1;
+  int32 quantity = 2;
+  string item_type = 3;
+}

@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package apb.api;
+
+// ContentsStoryService handles story content progression (sub-scenarios, event stories, etc.).
+
+service ContentsStoryService {
+  rpc GetContentsStory(GetContentsStoryRequest) returns (GetContentsStoryResponse);
+  rpc UpdateProgress(UpdateProgressRequest) returns (UpdateProgressResponse);
+}
+
+message GetContentsStoryRequest {
+  string uuid = 1;
+  string contents_id = 2;
+}
+
+message GetContentsStoryResponse {
+  ContentsStoryData story = 1;
+  repeated StoryChapter chapters = 2;
+}
+
+message UpdateProgressRequest {
+  string uuid = 1;
+  string contents_id = 2;
+  int32 chapter_id = 3;
+  int32 progress_percent = 4;
+}
+
+message UpdateProgressResponse {
+  bool success = 1;
+  string error_message = 2;
+  ContentsStoryData updated_story = 3;
+}
+
+message ContentsStoryData {
+  string contents_id = 1;
+  string title = 2;
+  string description = 3;
+  int32 current_chapter = 4;
+  int32 current_progress = 5;
+  int64 last_updated_time = 6;
+}
+
+message StoryChapter {
+  int32 chapter_id = 1;
+  string title = 2;
+  bool unlocked = 3;
+  bool completed = 4;
+  int32 view_count = 5;
+}
