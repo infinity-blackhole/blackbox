@@ -89,6 +89,7 @@ time = { version = "0.3", features = ["serde"] }
 
 # Build
 prost-build = "0.13"
+arc-swap = "1"
 
 # Testing
 insta = { version = "1", features = ["json"] }
