@@ -1,5 +1,5 @@
-//! Asset CDN: list.bin, bundles, static pages.
-
-pub mod resolver;
-pub mod revision;
-pub mod routes;
+pub mod asset;
+pub mod config;
+pub mod error;
+pub mod handlers;
+pub mod server;
